@@ -9,3 +9,9 @@
 
 #jupyter notebook checkpoints
 /.ipynb_checkpoints
+
+#ignore DS_store files
+*.DS_store
+
+#ignore ipynb files
+*.ipynb
