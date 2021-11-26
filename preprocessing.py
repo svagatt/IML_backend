@@ -1,0 +1,29 @@
+import numpy as np
+import mne
+
+
+def preprocess(raw, filtername):
+    sample_rate = raw.info['sfreq']
+    print('-----Start Preprocessing-------')
+    eeg_picks = mne.pick_types(raw.info, eeg=True)
+    """  https://doi.org/10.3389/fnins.2021.642251
+    -> applying a notch filter for power line noise
+    -> applying a simple butterworth order 4 highpass and low pass filter
+    """
+    if filtername == 'butter':
+        freqs = np.arange(50, 250, 50)
+        raw.notch_filter(freqs, picks=eeg_picks)
+        raw.filter(1., None)
+        raw.filter(None, 50.)
+    elif filtername == 'cheby2':
+        """
+        https://ieeexplore.ieee.org/document/9061628
+        """
+        pln_filter_params = dict(order=2, ftype='butter')
+        raw.notch_filter(50, iir_params=pln_filter_params, picks=eeg_picks, method='iir')
+        raw.filter(1., None)
+        cheby2_filter_params = dict(order=17, ftype='cheby2', output='sos', rs=60.)
+        raw.filter(None, 200., iir_params=cheby2_filter_params, method='iir')
+    # raw_tmp = raw.copy()
+    print('----Preprocessing done----')
+    return raw

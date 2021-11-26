@@ -1,0 +1,11 @@
+# Default ignored files
+/.idea/shelf/
+/.idea/workspace.xml
+
+# data folders
+/preprocessed_data
+/sample_test_data
+/epochs
+
+#jupyter notebook checkpoints
+/.ipynb_checkpoints
