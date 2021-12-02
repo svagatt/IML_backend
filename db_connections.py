@@ -19,15 +19,10 @@ def open_database():
     db = mongoclient['eeg_data_info']
     return db
 
-def get_subject_information(collection, subject_id):
-    db = open_database()
-    file_loc = db[collection].find({id: subject_id})['fileLocation']
-    return file_loc
 
-
-def store_accuracy_results_in_db(sub_id,channels, filters, autoreject, feature_extraction_methods, elm_hidden_nodes, activation_method, train_score, test_score):
+def store_accuracy_results_in_db(sub_id, channels, filters, autoreject, feature_extraction_methods, elm_hidden_nodes, activation_method, train_score, test_score):
     db = open_database()
-    collection = db[f'{sub_id}_results']
+    collection = db['results']
     collection.insert_one({
         'subject': sub_id,
         'channels': channels,

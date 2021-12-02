@@ -1,4 +1,5 @@
 import hashlib
+import os
 
 
 def sha256sum(filename):
@@ -9,3 +10,8 @@ def sha256sum(filename):
         for n in iter(lambda: f.readinto(mv), 0):
             h.update(mv[:n])
     return h.hexdigest()
+
+
+def get_hash_for_preprocessed_data(sub_id):
+    file_path = f'{os.getcwd()}/preprocessed_data/sub_{sub_id}_preprocessed_raw.fif'
+    return sha256sum(file_path)

@@ -19,6 +19,7 @@ def cut_epochs_by_event_id(event_dict, subject_id, use_autoreject):
     fname = f'/sub_{subject_id}_epo.fif'
     epochs.save(get_path('epochs')+fname, overwrite=True, fmt='single', verbose=True)
 
+
 def use_autoreject_to_remove_noise(epochs):
     """ Auto reject is a paper on automatic artifact removal from EEG data
          https://doi.org/10.1016/j.neuroimage.2017.06.030
@@ -26,4 +27,7 @@ def use_autoreject_to_remove_noise(epochs):
     ar = AutoReject()
     epochs_clean = ar.fit_transform(epochs)
     return epochs_clean
+
+
+
 

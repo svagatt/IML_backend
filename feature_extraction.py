@@ -1,10 +1,12 @@
 import mne_features
-import mne
-import pandas as pd
-import generate_file_hash
+import numpy as np
+from pymongo import ASCENDING, DESCENDING
 
 from read_save_data_files import get_path, read_fif_epochs
 from db_connections import open_database
+from generate_file_hash import get_hash_for_preprocessed_data
+
+indexctr = 1
 
 
 def get_epochs_path(sub_id):
@@ -12,40 +14,49 @@ def get_epochs_path(sub_id):
     return file_path
 
 
-def extract_features(sub_id, samplerate, filehash, feature_extraction_methods):
+def extract_features(parameters, samplerate, event_dict):
+    sub_id = parameters.subject
+    feature_extraction_methods = parameters.features
     db = open_database()
     epochs = read_fif_epochs(get_epochs_path(sub_id))
-    labels = epochs.events[:, -1]
-    labellist = labels.tolist()
-    create_collection_for_labels(db, sub_id, labellist)
-    data = epochs.get_data()
-    channel_num = data.shape[1]
-    features_npy = mne_features.feature_extraction.extract_features(data, samplerate, feature_extraction_methods)
-    create_collection_with_features(db, features_npy, sub_id, channel_num, feature_extraction_methods, filehash)
-    return features_npy, labels
+    event_keys = event_dict.keys()
+    for event in event_keys:
+        data = epochs.get_data(item=event)
+        features_npy = mne_features.feature_extraction.extract_features(data, samplerate, feature_extraction_methods)
+        create_collection_with_features(parameters, db, features_npy, event)
 
 
-def create_collection_with_features(db, features_npy, sub_id, channels, methods, filehash):
+def create_collection_with_features(parameters, db, features_npy, label):
+    """
+    #TODO: add a hash file to compare logs in features collections and have only one features collection
+    :param parameters: parameters of the eeg device used for extraction
+    :param db: the db instance
+    :param features_npy: numpy array with features
+    :param label:the label associated with the epochs to add it to the features
+    :return:
+    """
+    sub_id = parameters.subject
+    feature_extraction_methods = parameters.features
+    filters = parameters.filters
+    channels = parameters.channels
+    filehash = get_hash_for_preprocessed_data(sub_id)
+    autoreject = 'autoreject' if parameters.autoreject else ''
     fe_methods = ''
-    for method in methods:
+    for method in feature_extraction_methods:
         fe_methods = f'{fe_methods}{method}_'
-    collection_name = f'features_{sub_id}_{channels}_{fe_methods}'
+    collection_name = f'features_{sub_id}_{filters}_{autoreject}_{channels}_{fe_methods}'
     if collection_name not in db.list_collection_names():
-        feature_collection = db[collection_name]
-        for features in features_npy:
-            feature_collection.insert_one({
-                'hash_id': filehash,
-                'features': features.tolist(),
-            })
-
-
-def create_collection_for_labels(db, sub_id, label_list):
-    label_collection = db['labels']
-    filepath = get_epochs_path(sub_id)
-    hash_id = generate_file_hash.sha256sum(filepath)
-    label_collection.update_one({'_id': hash_id}, {'$setOnInsert': {
-        'subject_id': sub_id,
-        'labels': label_list}},
-            upsert=True)
-
-# extract_features('2', 500, 'fc0ad2901dc0109a36abf521dbfed16ed93d19370a9527c9b1b22c5b8a4c71bb')
+        index = 1
+    else:
+        index = db[collection_name].find().sort('_id', DESCENDING).limit(1)['_id']
+        print(index)
+    #
+    # feature_collection = db[collection_name]
+    # for features in features_npy:
+    #     feature_collection.insert_one({
+    #         '_id': index,
+    #         'hashid': filehash,
+    #         'features': features.tolist(),
+    #         'label': label,
+    #     })
+    #     index += 1
