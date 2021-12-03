@@ -6,8 +6,6 @@ from read_save_data_files import get_path, read_fif_epochs
 from db_connections import open_database
 from generate_file_hash import get_hash_for_preprocessed_data
 
-indexctr = 1
-
 
 def get_epochs_path(sub_id):
     file_path = get_path('epochs') + f'/sub_{sub_id}_epo.fif'
@@ -46,17 +44,23 @@ def create_collection_with_features(parameters, db, features_npy, label):
         fe_methods = f'{fe_methods}{method}_'
     collection_name = f'features_{sub_id}_{filters}_{autoreject}_{channels}_{fe_methods}'
     if collection_name not in db.list_collection_names():
-        index = 1
+        index = 0
+        """ check if features are bring extracted for the same preprocessed hash index"""
     else:
-        index = db[collection_name].find().sort('_id', DESCENDING).limit(1)['_id']
-        print(index)
-    #
-    # feature_collection = db[collection_name]
-    # for features in features_npy:
-    #     feature_collection.insert_one({
-    #         '_id': index,
-    #         'hashid': filehash,
-    #         'features': features.tolist(),
-    #         'label': label,
-    #     })
-    #     index += 1
+        feature_collection = db[collection_name]
+        cursor = feature_collection.find().sort('_id', DESCENDING).limit(1)
+        for doc in cursor:
+            hashid = doc['hashid']
+            index = doc['_id']
+        if hashid != get_hash_for_preprocessed_data(sub_id):
+            for features in features_npy:
+                index += 1
+                feature_collection.insert_one({
+                    '_id': index,
+                    'hashid': filehash,
+                    'features': features.tolist(),
+                    'label': label,
+                })
+        else:
+            print('---Data already available---')
+            return
