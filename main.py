@@ -54,7 +54,6 @@ cut_epochs_by_event_id(event_dict, subject, use_autoreject=use_autoreject)
 """ extract relevant features using mne.features"""
 extract_features(parameters, samplerate, event_dict)
 """ Classify """
-# train_score, test_score =
-# elm_classifier.classify(random_state, parameters)
+elm_classifier.classify(random_state, parameters)
 
 

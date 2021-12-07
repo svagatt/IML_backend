@@ -1,6 +1,6 @@
 import mne_features
-import numpy as np
-from pymongo import ASCENDING, DESCENDING
+from pymongo import DESCENDING
+import asyncio
 
 from read_save_data_files import get_path, read_fif_epochs
 from db_connections import open_database
@@ -21,10 +21,11 @@ def extract_features(parameters, samplerate, event_dict):
     for event in event_keys:
         data = epochs.get_data(item=event)
         features_npy = mne_features.feature_extraction.extract_features(data, samplerate, feature_extraction_methods)
-        create_collection_with_features(parameters, db, features_npy, event)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(create_collection_with_features(parameters, db, features_npy, event))
 
 
-def create_collection_with_features(parameters, db, features_npy, label):
+async def create_collection_with_features(parameters, db, features_npy, label):
     """
     #TODO: add a hash file to compare logs in features collections and have only one features collection
     :param parameters: parameters of the eeg device used for extraction
@@ -39,28 +40,29 @@ def create_collection_with_features(parameters, db, features_npy, label):
     channels = parameters.channels
     filehash = get_hash_for_preprocessed_data(sub_id)
     autoreject = 'autoreject' if parameters.autoreject else ''
-    fe_methods = ''
-    for method in feature_extraction_methods:
-        fe_methods = f'{fe_methods}{method}_'
+    fe_methods = get_femethods_string(feature_extraction_methods)
     collection_name = f'features_{sub_id}_{filters}_{autoreject}_{channels}_{fe_methods}'
-    if collection_name not in db.list_collection_names():
+
+    feature_collection = db[collection_name]
+
+    if collection_name not in await db.list_collection_names():
         index = 0
-        """ check if features are bring extracted for the same preprocessed hash index"""
     else:
-        feature_collection = db[collection_name]
         cursor = feature_collection.find().sort('_id', DESCENDING).limit(1)
-        for doc in cursor:
-            hashid = doc['hashid']
+        async for doc in cursor:
             index = doc['_id']
-        if hashid != get_hash_for_preprocessed_data(sub_id):
-            for features in features_npy:
-                index += 1
-                feature_collection.insert_one({
-                    '_id': index,
-                    'hashid': filehash,
-                    'features': features.tolist(),
-                    'label': label,
-                })
-        else:
-            print('---Data already available---')
-            return
+    for features in features_npy:
+        index += 1
+        doc_dict = {'_id': index, 'hashid': filehash, 'features': features.tolist(), 'label': label}
+        await insert_doc_in_collection(feature_collection, doc_dict)
+
+
+def get_femethods_string(feature_extraction_methods) -> str:
+    name = ''
+    for method in feature_extraction_methods:
+        name = f'{name}{method}_'
+    return name
+
+
+async def insert_doc_in_collection(feature_collection, doc):
+    await feature_collection.insert_one(doc)
