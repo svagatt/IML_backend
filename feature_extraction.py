@@ -12,39 +12,28 @@ def get_epochs_path(sub_id):
     return file_path
 
 
-def extract_features(parameters, samplerate, event_dict):
+async def extract_features(parameters, samplerate, event_dict):
     sub_id = parameters.subject
+    channel_num = parameters.channels
+    filehash = get_hash_for_preprocessed_data(sub_id, channel_num)
     feature_extraction_methods = parameters.features
     db = open_database()
     epochs = read_fif_epochs(get_epochs_path(sub_id))
     event_keys = event_dict.keys()
-    for event in event_keys:
-        data = epochs.get_data(item=event)
-        features_npy = mne_features.feature_extraction.extract_features(data, samplerate, feature_extraction_methods)
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(create_collection_with_features(parameters, db, features_npy, event))
+    collection_name = get_collection_name(parameters)
+    if collection_name not in await db.list_collection_names():
+        print('--------Extracting features----------')
+        for event in event_keys:
+            data = epochs.get_data(item=event)
+            features_npy = mne_features.feature_extraction.extract_features(data, samplerate, feature_extraction_methods)
+            await create_collection_with_features(parameters, db, features_npy, event, filehash)
+    else:
+        print('------Database already exists--------')
 
 
-async def create_collection_with_features(parameters, db, features_npy, label):
-    """
-    #TODO: add a hash file to compare logs in features collections and have only one features collection
-    :param parameters: parameters of the eeg device used for extraction
-    :param db: the db instance
-    :param features_npy: numpy array with features
-    :param label:the label associated with the epochs to add it to the features
-    :return:
-    """
-    sub_id = parameters.subject
-    feature_extraction_methods = parameters.features
-    filters = parameters.filters
-    channels = parameters.channels
-    filehash = get_hash_for_preprocessed_data(sub_id)
-    autoreject = 'autoreject' if parameters.autoreject else ''
-    fe_methods = get_femethods_string(feature_extraction_methods)
-    collection_name = f'features_{sub_id}_{filters}_{autoreject}_{channels}_{fe_methods}'
-
+async def create_collection_with_features(parameters, db, features_npy, label, filehash):
+    collection_name = get_collection_name(parameters)
     feature_collection = db[collection_name]
-
     if collection_name not in await db.list_collection_names():
         index = 0
     else:
@@ -66,3 +55,14 @@ def get_femethods_string(feature_extraction_methods) -> str:
 
 async def insert_doc_in_collection(feature_collection, doc):
     await feature_collection.insert_one(doc)
+
+
+def get_collection_name(parameters) -> str:
+    sub_id = parameters.subject
+    feature_extraction_methods = parameters.features
+    filters = parameters.filters
+    channels = parameters.channels
+    autoreject = 'autoreject' if parameters.autoreject else ''
+    fe_methods = get_femethods_string(feature_extraction_methods)
+    collection_name = f'features_{sub_id}_{filters}_{autoreject}_{channels}_{fe_methods}'
+    return collection_name

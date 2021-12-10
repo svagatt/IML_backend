@@ -6,8 +6,8 @@ import mne
 import pandas as pd
 
 
-def cut_epochs_by_event_id(event_dict, subject_id, use_autoreject):
-    file_path = get_path('preprocessed_data') + f'/sub_{subject_id}_preprocessed_raw.fif'
+def cut_epochs_by_event_id(event_dict, subject_id, use_autoreject, channel_num):
+    file_path = get_path('preprocessed_data') + f'/sub_{subject_id}_preprocessed_{channel_num}_raw.fif'
     raw = read_fif_raw(file_path)
     """ extract events from raw data """
     raw_events = raw.info['events']

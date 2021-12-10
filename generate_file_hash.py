@@ -12,6 +12,6 @@ def sha256sum(filename):
     return h.hexdigest()
 
 
-def get_hash_for_preprocessed_data(sub_id):
-    file_path = f'{os.getcwd()}/preprocessed_data/sub_{sub_id}_preprocessed_raw.fif'
+def get_hash_for_preprocessed_data(sub_id, channel_num):
+    file_path = f'{os.getcwd()}/preprocessed_data/sub_{sub_id}_preprocessed_{channel_num}_raw.fif'
     return sha256sum(file_path)
