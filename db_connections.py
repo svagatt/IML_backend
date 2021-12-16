@@ -32,4 +32,7 @@ def store_accuracy_results_in_db(parameters):
         'features': parameters.features,
         'trainScore': parameters.train_score,
         'testScore': parameters.test_score,
+        'classifier': parameters.classifier,
+        'others': parameters.others,
+
     })

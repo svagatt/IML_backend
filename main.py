@@ -24,7 +24,7 @@ random_state = np.random.RandomState(42)
 feature_extraction_methods = ['hurst_exp', 'skewness', 'std', 'hjorth_complexity', 'hjorth_mobility', 'higuchi_fd', 'spect_entropy', 'svd_fisher_info'
                               , 'app_entropy', 'pow_freq_bands']
 use_autoreject = False
-filter_methods = 'butters'
+filter_methods = 'butter'
 # channels = ['C4', 'FC3', 'FC1', 'F5', 'C3', 'F7', 'FT7', 'CZ', 'C5', 'T7', 'P3']
 channels = []
 channel_num = len(channels) if len(channels) is not 0 else 64
