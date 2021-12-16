@@ -150,4 +150,3 @@ dependencies:
     - wslink==1.1.0
     - yarl==1.7.0
     - zope-interface==5.4.0
-prefix: /usr/local/anaconda3/envs/ml_clsfictn
