@@ -1,25 +1,23 @@
 import zmq
+from recorder_connection import start_recording
 import asyncio
-import time
-
 
 context = zmq.Context()
 socket = context.socket(zmq.REP)
 socket.bind('tcp://*:5555')
 
 
-async def main():
-    while True:
-        message = socket.recv()
-        print(f'Request Received: {message}')
-        await asyncio.sleep(2)
-        action_based_on_request(socket, message)
+def main():
+    message = socket.recv_string()
+    print(f'Request Received: {message}')
+    asyncio.run(action_based_on_request(socket, message))
 
 
-def action_based_on_request(socket, message):
-    if message is b'RequestToStartRecording':
-        socket.send(b'enabled')
+async def action_based_on_request(repsocket, message):
+    if message == 'RequestToStartRecording':
+        await start_recording()
+        repsocket.send_string('enabled')
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()
     input()
