@@ -115,7 +115,6 @@ dependencies:
     - meshio==4.4.6
     - mne==0.23.4
     - mne-features==0.2.dev0
-    - motor==2.5.1
     - multidict==5.2.0
     - nibabel==3.2.1
     - nilearn==0.8.1
@@ -125,7 +124,7 @@ dependencies:
     - pillow==8.4.0
     - pybv==0.6.0
     - pyface==7.3.0
-    - pymongo==3.12.2
+    - pymongo==4.0
     - pyoselm==1.0.1
     - pyparsing==3.0.1
     - pyqt5==5.15.5
