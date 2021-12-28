@@ -1,8 +1,7 @@
 from pyoselm import ELMClassifier
-from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
-import asyncio
+import pickle
 
 from db_connections import open_database, store_accuracy_results_in_db
 from generate_file_hash import get_hash_for_preprocessed_data
@@ -32,6 +31,10 @@ async def classify(randomstate, parameters):
                                  parameters.channels, train_score, test_score, name)
         store_accuracy_results_in_db(db_elements)
         print('--------Classification done-------')
+        trained_model = pickle.dumps(model)
+        await store_model_in_db(name, trained_model)
+
+
 
 
 async def get_features_labels_from_db(parameters):
@@ -51,6 +54,15 @@ async def get_features_labels_from_db(parameters):
         features_list.append(value['features'])
         labels_list.append(value['label'])
     return features_list, labels_list
+
+
+async def store_model_in_db(name, trained_model):
+    collection_name = 'trained_models'
+    await db[collection_name].insert_one({
+        'name': name,
+        'model': trained_model,
+    })
+
 
 
 

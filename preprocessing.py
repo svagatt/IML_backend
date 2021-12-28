@@ -27,6 +27,8 @@ def preprocess(raw, filtername, channels):
         raw.filter(1., None)
         cheby2_filter_params = dict(order=17, ftype='cheby2', output='sos', rs=60.)
         raw.filter(None, 200., iir_params=cheby2_filter_params, method='iir')
+    else:
+        print('-----Not a valid filter name-----')
     # raw_tmp = raw.copy()
     print('----Preprocessing done----')
     return raw
