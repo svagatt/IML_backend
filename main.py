@@ -12,6 +12,7 @@ from datetime import datetime
 import numpy as np
 import os
 import mne
+import sys
 
 """ get current timestamp"""
 timestamp = datetime.now()
@@ -57,4 +58,5 @@ loop.run_until_complete(extract_features(parameters, samplerate, event_dict))
 loop.run_until_complete(elm_classifier.classify(random_state, parameters))
 """Prevent program from stopping"""
 print('-----Press enter to exit------')
-input()
+if input():
+    sys.exit(0)
