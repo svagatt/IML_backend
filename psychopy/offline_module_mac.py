@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-This experiment was created using PsychoPy3 Experiment Builder (v2021.1.4),
-    on January 04, 2022, at 17:23
+This experiment was created using PsychoPy3 Experiment Builder (v2021.2.3),
+    on Mon Dec 27 22:45:02 2021
 If you publish work using this script the most relevant publication is:
 
     Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019) 
@@ -10,6 +10,8 @@ If you publish work using this script the most relevant publication is:
         https://doi.org/10.3758/s13428-018-01193-y
 
 """
+
+#TODO: add start recording at the start of the instruction or the end of the instrauction
 
 from __future__ import absolute_import, division
 
@@ -28,26 +30,14 @@ import sys  # to get file system encoding
 
 from psychopy.hardware import keyboard
 
-# External imports
 
-from EEGTools.Recorders.LiveAmpRecorder.liveamp_recorder import LiveAmpRecorder as Recorder
-from EEGTools.Recorders.LiveAmpRecorder.Backends import Sawtooth as backend
-
-# a get_path def to create a dir or the get an existing dir
-def get_path(directory_name):
-    print('Current working directory:'+os.getcwd())
-    path = f'{os.getcwd() }/{directory_name}'
-    if not os.path.exists(path):
-        # Path does not exist yet, create it
-        os.makedirs(path)
-    return path
 
 # Ensure that relative paths start from the same directory as this script
 _thisDir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(_thisDir)
 
 # Store info about the experiment session
-psychopyVersion = '2021.1.4'
+psychopyVersion = '2021.2.3'
 expName = 'offline_module'  # from the Builder filename that created this script
 expInfo = {'participant': ''}
 dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys=False, title=expName)
@@ -63,7 +53,7 @@ filename = _thisDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expNa
 # An ExperimentHandler isn't essential but helps with data saving
 thisExp = data.ExperimentHandler(name=expName, version='',
     extraInfo=expInfo, runtimeInfo=None,
-    originPath='C:\\Users\\mash02-admin\\varsha_thesis\\ml_part\\machine_learning_part\\psychopy\\offline_module.py',
+    originPath='/Users/MindPalace/thesis_implementation/psychopy_exp/offline_module.py',
     savePickle=True, saveWideText=False,
     dataFileName=filename)
 # save a log file for detail verbose info
@@ -74,23 +64,28 @@ endExpNow = False  # flag for 'escape' or other condition => quit the exp
 frameTolerance = 0.001  # how close to onset before 'same' frame
 
 # events that occur during the recording
-event_list = {'Schraube': 1, 'Platine': 2, 'Gehaüse': 3, 'Werkbank': 4, 'Fließband': 5, 'Boden': 6, 'Lege': 7, 'Halte': 8, 'Hebe': 9}
+event_list = {
+                 'Schraube': 1,
+                 'Platine': 2,
+                 'Gehaüse': 3,
+                 'Werkbank': 4,
+                 'Fließband': 5,
+                 'Boden': 6,
+                 'Lege': 7,
+                 'Halte': 8,
+                 'Hebe': 9,
+             },
 
-# initialize recorder
-# rec = Recorder()
-# use dummy data with the recorder
-rec = Recorder(backend=backend.get_backend())
-rec.connect()
-
+# initialize recorder for the offline module
+# rec = initialize_recorder(True)
 
 # set event dict
-rev_event_dict = {value:key for key,value in event_list.items()}
-
+# rec.set_event_dict(event_list)
 # Start Code - component code to be run after the window creation
 
 # Setup the Window
 win = visual.Window(
-    size=[1920, 1080], fullscr=False, screen=0, 
+    size=[1440, 900], fullscr=True, screen=0, 
     winType='pyglet', allowGUI=False, allowStencil=False,
     monitor='testMonitor', color=[0,0,0], colorSpace='rgb',
     blendMode='avg', useFBO=True, 
@@ -101,6 +96,9 @@ if expInfo['frameRate'] != None:
     frameDur = 1.0 / round(expInfo['frameRate'])
 else:
     frameDur = 1.0 / 60.0  # could not measure, so guess
+
+# Setup eyetracking
+ioDevice = ioConfig = ioSession = ioServer = eyetracker = None
 
 # create a default keyboard (e.g. to check for escape)
 defaultKeyboard = keyboard.Keyboard()
@@ -259,10 +257,6 @@ if space_key.keys in ['', [], None]:  # No response was made
 thisExp.addData('space_key.keys',space_key.keys)
 if space_key.keys != None:  # we had a response
     thisExp.addData('space_key.rt', space_key.rt)
-    # start recording on the space key press
-    rec.start_recording()
-    # rec.set_event_dict(rev_event_dict)
-    # a response ends the routine
 thisExp.addData('space_key.started', space_key.tStartRefresh)
 thisExp.addData('space_key.stopped', space_key.tStopRefresh)
 thisExp.nextEntry()
@@ -293,10 +287,10 @@ for thisTrial in trials:
     routineTimer.add(10.250000)
     # update component parameters for each repeat
     text.setText(word)
-    for key, value in event_list.items():
-        if word == key:
-            rec.refresh()
-            rec.set_event(value)
+    # for key, value in event_list:
+    #     if word == key:
+    #         rec.set_event(value)
+
     # keep track of which components have finished
     trialComponents = [text, fix_cross, text_2, fix_cross2, text_3, fix_cross3, text_4]
     for thisComponent in trialComponents:
@@ -488,16 +482,14 @@ else:
 trials.saveAsText(filename + 'trials.csv', delim=',',
     stimOut=params,
     dataOut=['n','all_mean','all_std', 'all_raw'])
+    
+# rec.disconnect()
+# rec.save(path=get_path('offline_module_data'), description='Offline Module Data Recording', subject_info=expInfo['participant'])
+
 
 # Flip one final time so any remaining win.callOnFlip() 
 # and win.timeOnFlip() tasks get executed before quitting
 win.flip()
-
-# stop recording and save the file
-rec.stop_recording()
-print('Recording has been stopped!')
-rec.save(path=get_path('offline_module_data'), description='Offline Module Data Recording', subject_info=expInfo['participant'])
-rec.disconnect()
 
 # these shouldn't be strictly necessary (should auto-save)
 thisExp.saveAsPickle(filename)
