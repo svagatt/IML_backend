@@ -31,23 +31,33 @@ from psychopy.hardware import keyboard
 # External imports
 
 from EEGTools.Recorders.LiveAmpRecorder.liveamp_recorder import LiveAmpRecorder as Recorder
-from EEGTools.Recorders.LiveAmpRecorder.Backends import Sawtooth as backend
+from asyncio import AbstractEventLoop
+
 
 # a get_path def to create a dir or the get an existing dir
 def get_path(directory_name):
     print('Current working directory:'+os.getcwd())
-    path = f'{os.getcwd() }/{directory_name}'
+    path = f'{os.getcwd() }/{directory_name}/'
     if not os.path.exists(path):
         # Path does not exist yet, create it
         os.makedirs(path)
     return path
+
+
+# stop recording and save the file
+def stop_recording():
+    rec.stop_recording()
+    print('Recording has been stopped!')
+    rec.set_event_dict(rev_event_dict)
+    rec.save(path=get_path('offline_module_data'), description='Offline Module Data Recording', save_additional = True, subject_info = expInfo)
+    rec.disconnect()
 
 # Ensure that relative paths start from the same directory as this script
 _thisDir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(_thisDir)
 
 # Store info about the experiment session
-psychopyVersion = '2021.1.4'
+psychopyVersion = '2021.2.3'
 expName = 'offline_module'  # from the Builder filename that created this script
 expInfo = {'participant': ''}
 dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys=False, title=expName)
@@ -79,7 +89,7 @@ event_list = {'Schraube': 1, 'Platine': 2, 'Gehaüse': 3, 'Werkbank': 4, 'Fließ
 # initialize recorder
 # rec = Recorder()
 # use dummy data with the recorder
-rec = Recorder(backend=backend.get_backend())
+rec = Recorder()
 rec.connect()
 
 
@@ -232,7 +242,9 @@ while continueRoutine:
     
     # check for quit (typically the Esc key)
     if endExpNow or defaultKeyboard.getKeys(keyList=["escape"]):
+        stop_recording()
         core.quit()
+
     
     # check if all components have finished
     if not continueRoutine:  # a component has requested a forced-end of Routine
@@ -261,7 +273,6 @@ if space_key.keys != None:  # we had a response
     thisExp.addData('space_key.rt', space_key.rt)
     # start recording on the space key press
     rec.start_recording()
-    # rec.set_event_dict(rev_event_dict)
     # a response ends the routine
 thisExp.addData('space_key.started', space_key.tStartRefresh)
 thisExp.addData('space_key.stopped', space_key.tStopRefresh)
@@ -270,7 +281,7 @@ thisExp.nextEntry()
 routineTimer.reset()
 
 # set up handler to look after randomisation of conditions etc
-trials = data.TrialHandler(nReps=15.0, method='fullRandom', 
+trials = data.TrialHandler(nReps=1.0, method='fullRandom', 
     extraInfo=expInfo, originPath=-1,
     trialList=data.importConditions('conditions.csv'),
     seed=None, name='trials')
@@ -478,7 +489,7 @@ for thisTrial in trials:
     thisExp.nextEntry()
     
 # completed 15.0 repeats of 'trials'
-
+stop_recording()
 # get names of stimulus parameters
 if trials.trialList in ([], [None], None):
     params = []
@@ -492,13 +503,6 @@ trials.saveAsText(filename + 'trials.csv', delim=',',
 # Flip one final time so any remaining win.callOnFlip() 
 # and win.timeOnFlip() tasks get executed before quitting
 win.flip()
-
-# stop recording and save the file
-rec.stop_recording()
-print('Recording has been stopped!')
-rec.save(path=get_path('offline_module_data'), description='Offline Module Data Recording', subject_info=expInfo['participant'])
-rec.disconnect()
-
 # these shouldn't be strictly necessary (should auto-save)
 thisExp.saveAsPickle(filename)
 logging.flush()
