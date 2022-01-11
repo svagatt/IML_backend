@@ -1,4 +1,4 @@
-from pyoselm import ELMClassifier
+from pyoselm import ELMClassifier, OSELMClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 import pickle
@@ -10,7 +10,7 @@ from classes import Parameters
 db = open_database()
 
 
-async def classify(randomstate, parameters):
+async def classify_offline(randomstate, parameters):
     features, labels = await get_features_labels_from_db(parameters)
     X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=randomstate)
 
@@ -34,6 +34,7 @@ async def classify(randomstate, parameters):
         trained_model = pickle.dumps(model)
         await store_model_in_db(name, trained_model)
 
+async def classify_online(randomstate, parameters):
 
 
 

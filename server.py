@@ -24,6 +24,11 @@ async def action_based_on_request(repsocket, request_message):
         await asyncio.sleep(2)
         await repsocket.send_string('World')
         print('response sent')
+    elif request_message == 'RequestToRetrainModel':
+        await asyncio.sleep(5)
+        #TODO: Add the online training method file
+        await repsocket.send_string('Retrained')
+        print('response to retrain sent')
 
 
 async def main():

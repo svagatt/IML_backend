@@ -55,7 +55,7 @@ cut_epochs_by_event_id(event_dict, subject, use_autoreject, channel_num)
 loop = asyncio.get_event_loop()
 loop.run_until_complete(extract_features(parameters, samplerate, event_dict))
 """ Classify """
-loop.run_until_complete(elm_classifier.classify(random_state, parameters))
+loop.run_until_complete(elm_classifier.classify_offline(random_state, parameters))
 """Prevent program from stopping"""
 print('-----Press enter to exit------')
 if input():
