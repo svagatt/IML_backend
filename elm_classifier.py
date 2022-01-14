@@ -10,13 +10,17 @@ from classes import Parameters
 db = open_database()
 
 
-async def classify_offline(randomstate, parameters):
+async def prepare_test_train_data(parameters, randomstate):
     features, labels = await get_features_labels_from_db(parameters)
     X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=randomstate)
+    return X_train, X_test, y_train, y_test
 
+
+async def classify_offline(randomstate, parameters):
+    X_train, X_test, y_train, y_test = await prepare_test_train_data(parameters, randomstate)
     models = {
         'elm': ELMClassifier(n_hidden=40, rbf_width=0.2, activation_func='sigmoid', random_state=randomstate),
-        'SVC': SVC(),
+        'onlineELM': OSELMClassifier(n_hidden=320, activation_func='sigmoid', random_state=randomstate),
     }
 
     for name, model in models.items():
@@ -34,9 +38,6 @@ async def classify_offline(randomstate, parameters):
         trained_model = pickle.dumps(model)
         await store_model_in_db(name, trained_model)
 
-async def classify_online(randomstate, parameters):
-
-
 
 async def get_features_labels_from_db(parameters):
     features_list, labels_list = [], []
@@ -44,7 +45,7 @@ async def get_features_labels_from_db(parameters):
     feature_extraction_methods = parameters.features
     filters = parameters.filters
     channels = parameters.channels
-    autoreject = 'autoreject' if parameters.autoreject else ''
+    autoreject = parameters.autoreject
     fe_methods = ''
     for method in feature_extraction_methods:
         fe_methods = f'{fe_methods}{method}_'

@@ -19,13 +19,13 @@ timestamp = datetime.now()
 dbname = 'eeg_data_info'
 
 """ subject info, parameters and methods """
-subject: str = '10'
+subject: str = '2'
 event_dict: dict = {'up': 21, 'left': 22, 'right': 23, 'pick': 24, 'push': 25}
 random_state = np.random.RandomState(42)
-feature_extraction_methods = ['hurst_exp', 'skewness', 'std', 'hjorth_complexity', 'hjorth_mobility', 'higuchi_fd', 'spect_entropy', 'svd_fisher_info'
+feature_extraction_methods = ['wavelet_dec', 'hurst_exp', 'skewness', 'std', 'hjorth_complexity', 'higuchi_fd', 'spect_entropy', 'svd_fisher_info'
                               , 'app_entropy', 'pow_freq_bands']
 use_autoreject = False
-filter_methods = 'butter'
+filter_methods = 'cheby2'
 # channels = ['C4', 'FC3', 'FC1', 'F5', 'C3', 'F7', 'FT7', 'CZ', 'C5', 'T7', 'P3']
 channels = []
 channel_num = len(channels) if len(channels) is not 0 else 64
@@ -38,7 +38,7 @@ mne.utils.set_config('MNE_USE_CUDA', 'false')
 
 filepath = f'{os.getcwd()}/sample_test_data/participant_{subject}.fif'
 """ read raw data from the fif file """
-raw = read_save_data_files.read_fif_raw(filepath)
+raw = read_save_data_files.read_raw_fif(filepath)
 samplerate = raw.info['sfreq']
 raw.set_montage(montage)
 raw.drop_channels(['x_dir', 'y_dir', 'z_dir'])

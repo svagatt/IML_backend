@@ -2,7 +2,7 @@ class Parameters:
     def __init__(self, subject, filters, autoreject, features, channels=None, train_score=None, test_score=None, classifier=None, others=None):
         self.subject = subject
         self.filters = filters
-        self.autoreject = 'no-autoreject' if autoreject is not True else 'autoreject'
+        self.autoreject = 'autoreject' if autoreject is True else 'no_autoreject'
         self.features = features
         self.channels = channels if channels is not None else 64
         self.train_score = train_score if train_score is not None else 0

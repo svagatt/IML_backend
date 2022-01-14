@@ -1,14 +1,40 @@
-from read_save_data_files import get_path, read_fif_raw
-from autoreject import AutoReject
+from read_save_data_files import get_path, read_raw_fif
 
-import numpy as np
+from autoreject import AutoReject
 import mne
-import pandas as pd
 
 
 def cut_epochs_by_event_id(event_dict, subject_id, use_autoreject, channel_num):
     file_path = get_path('preprocessed_data') + f'/sub_{subject_id}_preprocessed_{channel_num}_raw.fif'
-    raw = read_fif_raw(file_path)
+    raw = read_raw_fif(file_path)
+    """ extract events from raw data """
+    raw_events = raw.info['events']
+    events = [event['list'].tolist() for event in raw_events]
+    epochs = mne.Epochs(raw, events, event_dict, -0.1, 2.0, preload=True)
+    # epochs['up'].plot_psd(picks='eeg')
+    if use_autoreject is True:
+        epochs = use_autoreject_to_remove_noise(epochs)
+    fname = f'/sub_{subject_id}_epo.fif'
+    epochs.save(get_path('epochs')+fname, overwrite=True, fmt='single', verbose=True)
+
+
+def cut_epochs_by_event_id_offline(event_dict, subject_id, use_autoreject, channel_num):
+    file_path = get_path('preprocessed_data') + f'/sub_{subject_id}_preprocessed_{channel_num}_raw.fif'
+    raw = read_raw_fif(file_path)
+    """ extract events from raw data """
+    raw_events = raw.info['events']
+    events = [event['list'].tolist() for event in raw_events]
+    epochs = mne.Epochs(raw, events, event_dict, -0.1, 2.0, preload=True)
+    # epochs['up'].plot_psd(picks='eeg')
+    if use_autoreject is True:
+        epochs = use_autoreject_to_remove_noise(epochs)
+    fname = f'/sub_{subject_id}_epo.fif'
+    epochs.save(get_path('epochs')+fname, overwrite=True, fmt='single', verbose=True)
+
+
+def cut_epochs_by_event_id_online(event_dict, subject_id, use_autoreject, channel_num):
+    file_path = get_path('preprocessed_data') + f'/sub_{subject_id}_preprocessed_{channel_num}_raw.fif'
+    raw = read_raw_fif(file_path)
     """ extract events from raw data """
     raw_events = raw.info['events']
     events = [event['list'].tolist() for event in raw_events]

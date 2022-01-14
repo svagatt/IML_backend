@@ -4,7 +4,6 @@ import asyncio
 
 # initialize the recorder and connect it
 rec = Recorder()
-rec.subject_info_ui()
 rec.connect()
 
 

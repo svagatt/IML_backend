@@ -30,10 +30,14 @@ def preprocessed_data(raw, subject, channel_num):
     raw.save(os.path.join(path, set_file_name(subject, level, channel_num)), fmt='single', overwrite=True)
 
 
-def read_fif_raw(filepath):
+def read_raw_fif(filepath):
     return mne.io.read_raw_fif(filepath, preload=True).load_data()
 
 
 def read_fif_epochs(filepath):
     return mne.read_epochs(filepath, preload=True)
+
+
+def append_raw(raws):
+    return mne.io.Raw.append(raws, True)
 
