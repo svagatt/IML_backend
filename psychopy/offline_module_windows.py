@@ -31,6 +31,8 @@ from psychopy.hardware import keyboard
 # External imports
 
 from EEGTools.Recorders.LiveAmpRecorder.liveamp_recorder import LiveAmpRecorder as Recorder
+from EEGTools.Recorders.LiveAmpRecorder.Backends import Sawtooth as backend
+
 from asyncio import AbstractEventLoop
 
 
@@ -89,7 +91,7 @@ event_list = {'Schraube': 1, 'Platine': 2, 'Gehaüse': 3, 'Werkbank': 4, 'Fließ
 # initialize recorder
 # rec = Recorder()
 # use dummy data with the recorder
-rec = Recorder()
+rec = Recorder(backend=backend.get_backend())
 rec.connect()
 
 
@@ -174,6 +176,13 @@ text_4 = visual.TextStim(win=win, name='text_4',
     color='white', colorSpace='rgb', opacity=None, 
     languageStyle='LTR',
     depth=-6.0);
+text_5 = visual.TextStim(win=win, name='text_5',
+    text=None,
+    font='Open Sans',
+    pos=(0, 0), height=0.1, wrapWidth=None, ori=0.0, 
+    color='white', colorSpace='rgb', opacity=None, 
+    languageStyle='LTR',
+    depth=-7.0);
 
 # Create some handy timers
 globalClock = core.Clock()  # to track the time since experiment started
@@ -242,7 +251,7 @@ while continueRoutine:
     
     # check for quit (typically the Esc key)
     if endExpNow or defaultKeyboard.getKeys(keyList=["escape"]):
-        stop_recording()
+#        stop_recording()
         core.quit()
 
     
@@ -281,7 +290,7 @@ thisExp.nextEntry()
 routineTimer.reset()
 
 # set up handler to look after randomisation of conditions etc
-trials = data.TrialHandler(nReps=1.0, method='fullRandom', 
+trials = data.TrialHandler(nReps=15.0, method='fullRandom', 
     extraInfo=expInfo, originPath=-1,
     trialList=data.importConditions('conditions.csv'),
     seed=None, name='trials')
@@ -309,7 +318,7 @@ for thisTrial in trials:
             rec.refresh()
             rec.set_event(value)
     # keep track of which components have finished
-    trialComponents = [text, fix_cross, text_2, fix_cross2, text_3, fix_cross3, text_4]
+    trialComponents = [text, fix_cross, text_2, text_5, fix_cross2, text_3, fix_cross3, text_4]
     for thisComponent in trialComponents:
         thisComponent.tStart = None
         thisComponent.tStop = None
@@ -474,6 +483,8 @@ for thisTrial in trials:
             thisComponent.setAutoDraw(False)
     trials.addData('text.started', text.tStartRefresh)
     trials.addData('text.stopped', text.tStopRefresh)
+    trials.addData('text_5.started', text_5.tStartRefresh)
+    trials.addData('text_5.stopped', text_5.tStopRefresh)
     trials.addData('fix_cross.started', fix_cross.tStartRefresh)
     trials.addData('fix_cross.stopped', fix_cross.tStopRefresh)
     trials.addData('text_2.started', text_2.tStartRefresh)

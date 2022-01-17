@@ -4,7 +4,8 @@ import zmq.asyncio
 context = zmq.asyncio.Context()
 socket = context.socket(zmq.REP)
 socket.bind('tcp://*:5555')
-
+# windows asyncio warning trigger
+# asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 async def get_request():
     messages = await socket.recv_multipart()
