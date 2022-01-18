@@ -1,5 +1,6 @@
 import asyncio
 import zmq.asyncio
+from online_module import classify_label
 
 context = zmq.asyncio.Context()
 socket = context.socket(zmq.REP)
@@ -18,22 +19,14 @@ async def get_request():
     return complete_message
 
 
-async def action_based_on_request(repsocket, request_message):
+async def action_based_on_request(repsocket, request_message, ctr):
     if request_message == 'RequestToStartRecording':
         await asyncio.sleep(2)
         await repsocket.send_string('enabled')
     elif request_message == 'RequestForClassifiedLabel':
-        # label = await get_label(sample)
-        label = 'schraube'
+        ctr += 1
+        label = await classify_label(ctr)
         await repsocket.send_string(label)
-    elif request_message == 'Hello':
-        await asyncio.sleep(2)
-        await repsocket.send_string('World')
-        print('response sent')
-    elif request_message == 'Hello again':
-        await asyncio.sleep(2)
-        await repsocket.send_string('World Again')
-        print('response sent')
     elif 'RequestToCorrectLabel' in request_message:
         label = request_message.split()[-1]
         await asyncio.sleep(2)
@@ -43,13 +36,22 @@ async def action_based_on_request(repsocket, request_message):
         #TODO: Add the online training method file
         await repsocket.send_string('Retrained')
         print('response to retrain sent')
+    elif request_message == 'Hello':
+        await asyncio.sleep(2)
+        await repsocket.send_string('World')
+        print('response sent')
+    elif request_message == 'Hello again':
+        await asyncio.sleep(2)
+        await repsocket.send_string('World Again')
+        print('response sent')
 
 
 def main():
     try:
         while True:
+            ctr=0
             message = asyncio.run(get_request())
-            asyncio.run(action_based_on_request(socket, message))
+            asyncio.run(action_based_on_request(socket, message, ctr))
     except KeyboardInterrupt:
         print('User triggered exit')
         socket.close(linger=0)

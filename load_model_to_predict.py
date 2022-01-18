@@ -14,6 +14,5 @@ async def load_model():
 
 async def get_label():
     model = await load_model()
-
     label = await model.predict()
     return label

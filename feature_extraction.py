@@ -15,7 +15,7 @@ from wavelet_decomposition import Wavelet_Decomposition
 wavelet = Wavelet_Decomposition()
 
 
-def get_epochs_path(sub_id):
+def get_epochs_path(sub_id, ctr):
     file_path = get_path('epochs') + f'/sub_{sub_id}_epo.fif'
     return file_path
 

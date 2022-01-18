@@ -47,7 +47,7 @@ raw.drop_channels(['x_dir', 'y_dir', 'z_dir'])
 raw_data = preprocess(raw, filter_methods, channels)
 # raw_data.plot(block=True, scalings='auto')
 """ save preprocessed data into a fif file """
-read_save_data_files.preprocessed_data(raw_data, subject, channel_num)
+read_save_data_files.save_preprocessed_data(raw_data, subject, channel_num, False)
 
 """ cut raw data into epochs based on the data """
 cut_epochs_by_event_id(event_dict, subject, use_autoreject, channel_num)

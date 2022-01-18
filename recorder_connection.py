@@ -13,6 +13,10 @@ async def start_recording():
     rec.refresh()
 
 
-async def set_event(event_id):
-    rec.set_event()
+async def set_event_with_offset(event_id, offset):
+    rec.set_event(event_id, offset)
 
+def get_latest_data_from_buffer():
+    rec.refresh()
+    data = rec.get_new_data()
+    return data
