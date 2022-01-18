@@ -22,7 +22,9 @@ from psychopy.constants import (NOT_STARTED, STARTED, PLAYING, PAUSED,
 import numpy as np  # whole numpy lib is available, prepend 'np.'
 from numpy import (sin, cos, tan, log, log10, pi, average,
                    sqrt, std, deg2rad, rad2deg, linspace, asarray)
+                   
 from numpy.random import random, randint, normal, shuffle, choice as randchoice
+from numpy.random import uniform
 import os  # handy system and path functions
 import sys  # to get file system encoding
 
@@ -37,15 +39,12 @@ from EEGTools.Recorders.LiveAmpRecorder.Backends import Sawtooth as backend
 
 folder_name = 'offline_module_data'
 loop_part = 0
+events_to_set = [] 
 
 
 # a get_path def to create a dir or the get an existing dir
 def get_path(directory_name):
-    print('Current working directory:'+os.getcwd())
-    path = f'{os.getcwd() }/{directory_name}/'
-    if not os.path.exists(path):
-        # Path does not exist yet, create it
-        os.makedirs(path)
+    path = f'C:\\Users\\mash02-admin\\varsha_thesis\\ml_part\\machine_learning_part\\{directory_name}\\'
     return path
 
 
@@ -54,10 +53,13 @@ def stop_recording():
     rec.stop_recording()
     print('Recording has been stopped!')
     rec.set_event_dict(rev_event_dict)
-    rec.save(path=f'{get_path(folder_name)}/part_{loop_part}_raw', description='Offline Module Data Recording', save_additional = True, subject_info = expInfo)
+    rec.save(file_prefix=f"subject_{expInfo['participant']}_part_{loop_part}_raw", path=get_path(folder_name), description='Offline Module Data Recording', save_additional = True, subject_info = expInfo)
     rec.disconnect()
-    
-    
+
+def set_event(event_id):
+    rec.refresh()
+    rec.set_event(event_id)
+    print(f'Event set: {event_id}')
 # Ensure that relative paths start from the same directory as this script
 _thisDir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(_thisDir)
@@ -90,12 +92,13 @@ endExpNow = False  # flag for 'escape' or other condition => quit the exp
 frameTolerance = 0.001  # how close to onset before 'same' frame
 
 # events that occur during the recording
-event_list = {'Schraube': 1, 'Platine': 2, 'Gehaüse': 3, 'Werkbank': 4, 'Fließband': 5, 'Boden': 6, 'Lege': 7, 'Halte': 8, 'Hebe': 9}
+event_list = {'Schraube_start': 10, 'Platine_start': 20, 'Gehäuse_start': 30, 'Werkbank_start': 40, 'Fließband_start': 50, 'Boden_start': 60, 'Lege_start': 70, 'Halte_start': 80, 'Hebe_start': 90,
+              'Schraube_end': 11, 'Platine_end': 21, 'Gehäuse_end': 31, 'Werkbank_end': 41, 'Fließband_end': 51, 'Boden_end': 61, 'Lege_end': 71, 'Halte_end': 81, 'Hebe_end': 91}
 
 # initialize recorder
-# rec = Recorder()
+rec = Recorder()
 # use dummy data with the recorder
-rec = Recorder(backend=backend.get_backend())
+#rec = Recorder(backend=backend.get_backend())
 rec.connect()
 
 
@@ -198,14 +201,14 @@ pauseClock = core.Clock()
 pause_text = visual.TextStim(win=win, name='pause_text',
     text="Jetzt gibt es 1 minute Pause, wenn Sie keine Pause wollen, drücken Sie die ’Leertaste' um fortzufahren",
     font='Open Sans',
-    pos=(0, 0), height=0.1, wrapWidth=None, ori=0.0, 
+    pos=(0, 0), height=0.05, wrapWidth=None, ori=0.0, 
     color='white', colorSpace='rgb', opacity=None, 
     languageStyle='LTR',
     depth=0.0);
 text_5 = visual.TextStim(win=win, name='text_5',
     text=str(round(pauseClock.getTime(),0)),
     font='Open Sans',
-    pos=(0, 0), height=0.5, wrapWidth=None, ori=0.0, 
+    pos=(0, -0.2), height=0.2, wrapWidth=None, ori=0.0, 
     color='white', colorSpace='rgb', opacity=None, 
     languageStyle='LTR',
     depth=-1.0);
@@ -305,8 +308,6 @@ if space_key.keys in ['', [], None]:  # No response was made
 thisExp.addData('space_key.keys',space_key.keys)
 if space_key.keys != None:  # we had a response
     thisExp.addData('space_key.rt', space_key.rt)
-    # start recording on the space key press
-    rec.start_recording()
 thisExp.addData('space_key.started', space_key.tStartRefresh)
 thisExp.addData('space_key.stopped', space_key.tStopRefresh)
 thisExp.nextEntry()
@@ -326,6 +327,8 @@ if thisRepeatx3 != None:
         exec('{} = thisRepeatx3[paramName]'.format(paramName))
 
 for thisRepeatx3 in repeatx3:
+    # start recording after each break
+    rec.start_recording()
     currentLoop = repeatx3
     loop_part += 1
     # abbreviate parameter names if possible (e.g. rgb = thisRepeatx3.rgb)
@@ -357,12 +360,10 @@ for thisRepeatx3 in repeatx3:
         # update component parameters for each repeat
         text.setText(word)
         for key, value in event_list.items():
-            if word == key:
-                rec.refresh()
-                rec.set_event(value)
-        from numpy.random import uniform
-        random_duration = round(uniform(1,2),2)
-        print(random_duration)
+            if word in key:
+                events_to_set.append(value)
+                
+        random_duration = round(uniform(1.1,2),1)
         
         # keep track of which components have finished
         trialComponents = [text, before_cross_pause, fix_cross, text_2, fix_cross2, text_3, fix_cross3, text_4]
@@ -424,6 +425,7 @@ for thisRepeatx3 in repeatx3:
             
             # *fix_cross* updates
             if fix_cross.status == NOT_STARTED and before_cross_pause.status == FINISHED:
+                set_event(events_to_set[-2])
                 # keep track of start time/frame for later
                 fix_cross.frameNStart = frameN  # exact frame index
                 fix_cross.tStart = t  # local t and not account for scr refresh
@@ -441,6 +443,7 @@ for thisRepeatx3 in repeatx3:
             
             # *text_2* updates
             if text_2.status == NOT_STARTED and fix_cross.status == FINISHED:
+                set_event(events_to_set[-1])
                 # keep track of start time/frame for later
                 text_2.frameNStart = frameN  # exact frame index
                 text_2.tStart = t  # local t and not account for scr refresh
@@ -458,6 +461,7 @@ for thisRepeatx3 in repeatx3:
             
             # *fix_cross2* updates
             if fix_cross2.status == NOT_STARTED and text_2.status == FINISHED:
+                set_event(events_to_set[-2])
                 # keep track of start time/frame for later
                 fix_cross2.frameNStart = frameN  # exact frame index
                 fix_cross2.tStart = t  # local t and not account for scr refresh
@@ -475,6 +479,7 @@ for thisRepeatx3 in repeatx3:
             
             # *text_3* updates
             if text_3.status == NOT_STARTED and fix_cross2.status == FINISHED:
+                set_event(events_to_set[-1])                
                 # keep track of start time/frame for later
                 text_3.frameNStart = frameN  # exact frame index
                 text_3.tStart = t  # local t and not account for scr refresh
@@ -492,6 +497,7 @@ for thisRepeatx3 in repeatx3:
             
             # *fix_cross3* updates
             if fix_cross3.status == NOT_STARTED and text_3.status == FINISHED:
+                set_event(events_to_set[-2])
                 # keep track of start time/frame for later
                 fix_cross3.frameNStart = frameN  # exact frame index
                 fix_cross3.tStart = t  # local t and not account for scr refresh
@@ -509,6 +515,7 @@ for thisRepeatx3 in repeatx3:
             
             # *text_4* updates
             if text_4.status == NOT_STARTED and fix_cross3.status == FINISHED:
+                set_event(events_to_set[-1])
                 # keep track of start time/frame for later
                 text_4.frameNStart = frameN  # exact frame index
                 text_4.tStart = t  # local t and not account for scr refresh
@@ -523,7 +530,6 @@ for thisRepeatx3 in repeatx3:
                     text_4.frameNStop = frameN  # exact frame index
                     win.timeOnFlip(text_4, 'tStopRefresh')  # time at next scr refresh
                     text_4.setAutoDraw(False)
-            
             # check for quit (typically the Esc key)
             if endExpNow or defaultKeyboard.getKeys(keyList=["escape"]):
                 core.quit()
@@ -569,7 +575,6 @@ for thisRepeatx3 in repeatx3:
         
     # completed 5.0 repeats of 'condition_reps'
     
-    stop_recording()
     # get names of stimulus parameters
     if condition_reps.trialList in ([], [None], None):
         params = []
@@ -579,9 +584,10 @@ for thisRepeatx3 in repeatx3:
     condition_reps.saveAsText(filename + 'condition_reps.csv', delim=',',
         stimOut=params,
         dataOut=['n','all_mean','all_std', 'all_raw'])
-    
+    stop_recording()
     # ------Prepare to start Routine "pause"-------
     continueRoutine = True
+    routineTimer.add(60.000000)
     # update component parameters for each repeat
     space_key_1.keys = []
     space_key_1.rt = []
@@ -602,7 +608,7 @@ for thisRepeatx3 in repeatx3:
     frameN = -1
     
     # -------Run Routine "pause"-------
-    while continueRoutine:
+    while continueRoutine and routineTimer.getTime() > 0:
         # get current time
         t = pauseClock.getTime()
         tThisFlip = win.getFutureFlipTime(clock=pauseClock)
@@ -636,12 +642,15 @@ for thisRepeatx3 in repeatx3:
             win.timeOnFlip(text_5, 'tStartRefresh')  # time at next scr refresh
             text_5.setAutoDraw(True)
         if text_5.status == STARTED:
-            if bool(space_key_1.status == FINISHED):
+            # is it time to stop? (based on global clock, using actual start)
+            if tThisFlipGlobal > text_5.tStartRefresh + 60-frameTolerance:
                 # keep track of stop time/frame for later
                 text_5.tStop = t  # not accounting for scr refresh
                 text_5.frameNStop = frameN  # exact frame index
                 win.timeOnFlip(text_5, 'tStopRefresh')  # time at next scr refresh
                 text_5.setAutoDraw(False)
+        if text_5.status == STARTED:  # only update if drawing
+            text_5.setText(str(round(pauseClock.getTime(),0)), log=False)
         
         # *space_key_1* updates
         waitOnFlip = False
@@ -656,6 +665,14 @@ for thisRepeatx3 in repeatx3:
             waitOnFlip = True
             win.callOnFlip(space_key_1.clock.reset)  # t=0 on next screen flip
             win.callOnFlip(space_key_1.clearEvents, eventType='keyboard')  # clear events on next screen flip
+        if space_key_1.status == STARTED:
+            # is it time to stop? (based on global clock, using actual start)
+            if tThisFlipGlobal > space_key_1.tStartRefresh + 60-frameTolerance:
+                # keep track of stop time/frame for later
+                space_key_1.tStop = t  # not accounting for scr refresh
+                space_key_1.frameNStop = frameN  # exact frame index
+                win.timeOnFlip(space_key_1, 'tStopRefresh')  # time at next scr refresh
+                space_key_1.status = FINISHED
         if space_key_1.status == STARTED and not waitOnFlip:
             theseKeys = space_key_1.getKeys(keyList=['y', 'n', 'left', 'right', 'space'], waitRelease=False)
             _space_key_1_allKeys.extend(theseKeys)
@@ -698,8 +715,6 @@ for thisRepeatx3 in repeatx3:
         repeatx3.addData('space_key_1.rt', space_key_1.rt)
     repeatx3.addData('space_key_1.started', space_key_1.tStartRefresh)
     repeatx3.addData('space_key_1.stopped', space_key_1.tStopRefresh)
-    # the Routine "pause" was not non-slip safe, so reset the non-slip timer
-    routineTimer.reset()
 # completed 3.0 repeats of 'repeatx3'
 
 

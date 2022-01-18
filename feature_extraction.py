@@ -39,6 +39,8 @@ async def extract_features(parameters, samplerate, event_dict):
                 feature_list.remove('wavelet_dec')
             features_mne_npy = mne_features.feature_extraction.extract_features(data, samplerate, feature_list)
             features_npy = np.column_stack((features_wavelet_npy, features_mne_npy))
+            print(features_wavelet_npy.shape, features_mne_npy.shape)
+            print(features_wavelet_npy)
             await create_collection_with_features(parameters, db, features_npy, event, filehash)
     else:
         print('------Database already exists--------')

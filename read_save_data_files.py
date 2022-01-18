@@ -38,6 +38,3 @@ def read_fif_epochs(filepath):
     return mne.read_epochs(filepath, preload=True)
 
 
-def append_raw(raws):
-    return mne.io.Raw.append(raws, True)
-

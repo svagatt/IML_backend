@@ -12,3 +12,7 @@ async def start_recording():
     await asyncio.sleep(3)
     rec.refresh()
 
+
+async def set_event(event_id):
+    rec.set_event()
+

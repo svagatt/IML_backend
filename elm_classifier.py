@@ -12,7 +12,7 @@ db = open_database()
 
 async def prepare_test_train_data(parameters, randomstate):
     features, labels = await get_features_labels_from_db(parameters)
-    X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=randomstate)
+    X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.05, random_state=randomstate)
     return X_train, X_test, y_train, y_test
 
 
@@ -20,7 +20,7 @@ async def classify_offline(randomstate, parameters):
     X_train, X_test, y_train, y_test = await prepare_test_train_data(parameters, randomstate)
     models = {
         'elm': ELMClassifier(n_hidden=40, rbf_width=0.2, activation_func='sigmoid', random_state=randomstate),
-        'onlineELM': OSELMClassifier(n_hidden=320, activation_func='sigmoid', random_state=randomstate),
+        'onlineELM': OSELMClassifier(n_hidden=43, activation_func='sigmoid', random_state=randomstate),
     }
 
     for name, model in models.items():

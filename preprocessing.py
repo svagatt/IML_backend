@@ -2,7 +2,7 @@ import numpy as np
 import mne
 
 
-def preprocess(raw, filtername, channels):
+def preprocess(raw, filtername, channels=None):
     sample_rate = raw.info['sfreq']
     print('-----Start Preprocessing-------')
     if channels:

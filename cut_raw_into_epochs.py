@@ -24,7 +24,8 @@ def cut_epochs_by_event_id_offline(event_dict, subject_id, use_autoreject, chann
     """ extract events from raw data """
     raw_events = raw.info['events']
     events = [event['list'].tolist() for event in raw_events]
-    epochs = mne.Epochs(raw, events, event_dict, -0.1, 2.0, preload=True)
+    print(len(events))
+    epochs = mne.Epochs(raw, events, event_dict, -0.2, 1.0, (-0.2, None), preload=True)
     # epochs['up'].plot_psd(picks='eeg')
     if use_autoreject is True:
         epochs = use_autoreject_to_remove_noise(epochs)
