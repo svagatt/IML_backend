@@ -1,6 +1,5 @@
 from pyoselm import ELMClassifier, OSELMClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.svm import SVC
 import pickle
 
 from db_connections import open_database, store_accuracy_results_in_db
@@ -19,8 +18,8 @@ async def prepare_test_train_data(parameters, randomstate):
 async def classify_offline(randomstate, parameters):
     X_train, X_test, y_train, y_test = await prepare_test_train_data(parameters, randomstate)
     models = {
-        'elm': ELMClassifier(n_hidden=40, rbf_width=0.2, activation_func='sigmoid', random_state=randomstate),
-        'onlineELM': OSELMClassifier(n_hidden=43, activation_func='sigmoid', random_state=randomstate),
+        'elm': ELMClassifier(n_hidden=350, rbf_width=0.2, activation_func='sigmoid', random_state=randomstate),
+        'onlineELM': OSELMClassifier(n_hidden=350, activation_func='sigmoid', random_state=randomstate),
     }
 
     for name, model in models.items():
@@ -42,14 +41,10 @@ async def classify_offline(randomstate, parameters):
 async def get_features_labels_from_db(parameters):
     features_list, labels_list = [], []
     sub_id = parameters.subject
-    feature_extraction_methods = parameters.features
     filters = parameters.filters
     channels = parameters.channels
     autoreject = parameters.autoreject
-    fe_methods = ''
-    for method in feature_extraction_methods:
-        fe_methods = f'{fe_methods}{method}_'
-    collection_name = f'features_{sub_id}_{filters}_{autoreject}_{channels}_{fe_methods}'
+    collection_name = f'features_{sub_id}_{filters}_{autoreject}'
     cursor = db[collection_name].find({'hashid': get_hash_for_preprocessed_data(sub_id, channels)}, {'features': True, 'label': True})
     async for doc in cursor:
         value = dict(doc)

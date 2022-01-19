@@ -3,7 +3,6 @@ import mne
 
 
 def preprocess(raw, filtername, channels=None):
-    sample_rate = raw.info['sfreq']
     print('-----Start Preprocessing-------')
     if channels:
         channel_picks = mne.pick_channels(channels, include=channels)

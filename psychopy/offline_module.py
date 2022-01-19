@@ -52,14 +52,18 @@ def get_path(directory_name):
 def stop_recording():
     rec.stop_recording()
     print('Recording has been stopped!')
-    rec.set_event_dict(rev_event_dict)
-    rec.save(file_prefix=f"subject_{expInfo['participant']}_part_{loop_part}_raw", path=get_path(folder_name), description='Offline Module Data Recording', save_additional = True, subject_info = expInfo)
     rec.disconnect()
+    rec.set_event_dict(event_list)
+    rec.save(file_prefix=f"subject_{expInfo['participant']}_raw", path=get_path(folder_name), description='Offline Module Data Recording', save_additional = True, subject_info = expInfo)
+    rec.refresh()
+    rec.clear()
 
 def set_event(event_id):
     rec.refresh()
     rec.set_event(event_id)
     print(f'Event set: {event_id}')
+
+    
 # Ensure that relative paths start from the same directory as this script
 _thisDir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(_thisDir)
@@ -93,17 +97,12 @@ frameTolerance = 0.001  # how close to onset before 'same' frame
 
 # events that occur during the recording
 event_list = {'Schraube_start': 10, 'Platine_start': 20, 'Gehäuse_start': 30, 'Werkbank_start': 40, 'Fließband_start': 50, 'Boden_start': 60, 'Lege_start': 70, 'Halte_start': 80, 'Hebe_start': 90,
-              'Schraube_end': 11, 'Platine_end': 21, 'Gehäuse_end': 31, 'Werkbank_end': 41, 'Fließband_end': 51, 'Boden_end': 61, 'Lege_end': 71, 'Halte_end': 81, 'Hebe_end': 91}
+              'Schraube_end': 11, 'Platine_end': 21, 'Gehäuse_end': 31, 'Werkbank_end': 41, 'Fließband_end': 51, 'Boden_end': 61, 'Lege_end': 71, 'Halte_end': 81, 'Hebe_end': 91, 
+              'Pause_start':12, 'Pause_end': 22, 'Space_key': 32, 'Dummy': 99}
 
 # initialize recorder
 rec = Recorder()
-# use dummy data with the recorder
-#rec = Recorder(backend=backend.get_backend())
 rec.connect()
-
-
-# set event dict
-rev_event_dict = {value:key for key,value in event_list.items()}
 
 # Start Code - component code to be run after the window creation
 
@@ -199,7 +198,7 @@ random_duration = 0
 # Initialize components for Routine "pause"
 pauseClock = core.Clock()
 pause_text = visual.TextStim(win=win, name='pause_text',
-    text="Jetzt gibt es 1 minute Pause, wenn Sie keine Pause wollen, drücken Sie die ’Leertaste' um fortzufahren",
+    text="Jetzt gibt es 1 Minute Pause, wenn Sie keine Pause wollen, drücken Sie die ’Leertaste' um fortzufahren",
     font='Open Sans',
     pos=(0, 0), height=0.05, wrapWidth=None, ori=0.0, 
     color='white', colorSpace='rgb', opacity=None, 
@@ -584,7 +583,6 @@ for thisRepeatx3 in repeatx3:
     condition_reps.saveAsText(filename + 'condition_reps.csv', delim=',',
         stimOut=params,
         dataOut=['n','all_mean','all_std', 'all_raw'])
-    stop_recording()
     # ------Prepare to start Routine "pause"-------
     continueRoutine = True
     routineTimer.add(60.000000)
@@ -615,7 +613,6 @@ for thisRepeatx3 in repeatx3:
         tThisFlipGlobal = win.getFutureFlipTime(clock=None)
         frameN = frameN + 1  # number of completed frames (so 0 is the first frame)
         # update/draw components on each frame
-        
         # *pause_text* updates
         if pause_text.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
             # keep track of start time/frame for later
@@ -624,6 +621,7 @@ for thisRepeatx3 in repeatx3:
             pause_text.tStartRefresh = tThisFlipGlobal  # on global time
             win.timeOnFlip(pause_text, 'tStartRefresh')  # time at next scr refresh
             pause_text.setAutoDraw(True)
+            set_event(12)
         if pause_text.status == STARTED:
             # is it time to stop? (based on global clock, using actual start)
             if tThisFlipGlobal > pause_text.tStartRefresh + 60-frameTolerance:
@@ -642,6 +640,7 @@ for thisRepeatx3 in repeatx3:
             win.timeOnFlip(text_5, 'tStartRefresh')  # time at next scr refresh
             text_5.setAutoDraw(True)
         if text_5.status == STARTED:
+            
             # is it time to stop? (based on global clock, using actual start)
             if tThisFlipGlobal > text_5.tStartRefresh + 60-frameTolerance:
                 # keep track of stop time/frame for later
@@ -679,6 +678,7 @@ for thisRepeatx3 in repeatx3:
             if len(_space_key_1_allKeys):
                 space_key_1.keys = _space_key_1_allKeys[-1].name  # just the last key pressed
                 space_key_1.rt = _space_key_1_allKeys[-1].rt
+                set_event(32)
                 # a response ends the routine
                 continueRoutine = False
         
@@ -694,7 +694,6 @@ for thisRepeatx3 in repeatx3:
             if hasattr(thisComponent, "status") and thisComponent.status != FINISHED:
                 continueRoutine = True
                 break  # at least one component has not yet finished
-        
         # refresh the screen
         if continueRoutine:  # don't flip if this routine is over or we'll get a blank screen
             win.flip()
@@ -715,13 +714,14 @@ for thisRepeatx3 in repeatx3:
         repeatx3.addData('space_key_1.rt', space_key_1.rt)
     repeatx3.addData('space_key_1.started', space_key_1.tStartRefresh)
     repeatx3.addData('space_key_1.stopped', space_key_1.tStopRefresh)
-# completed 3.0 repeats of 'repeatx3'
+    set_event(22)
 
+# completed 3.0 repeats of 'repeatx3'
 
 # Flip one final time so any remaining win.callOnFlip() 
 # and win.timeOnFlip() tasks get executed before quitting
 win.flip()
-
+stop_recording()
 # these shouldn't be strictly necessary (should auto-save)
 thisExp.saveAsPickle(filename)
 logging.flush()

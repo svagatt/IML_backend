@@ -6,7 +6,7 @@ context = zmq.asyncio.Context()
 socket = context.socket(zmq.REP)
 socket.bind('tcp://*:5555')
 # windows asyncio warning trigger
-# asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 async def get_request():
     messages = await socket.recv_multipart()
@@ -25,7 +25,9 @@ async def action_based_on_request(repsocket, request_message, ctr):
         await repsocket.send_string('enabled')
     elif request_message == 'RequestForClassifiedLabel':
         ctr += 1
-        label = await classify_label(ctr)
+        print(ctr)
+        # label = await classify_label(ctr)
+        label = 'Platine'
         await repsocket.send_string(label)
     elif 'RequestToCorrectLabel' in request_message:
         label = request_message.split()[-1]
@@ -47,9 +49,9 @@ async def action_based_on_request(repsocket, request_message, ctr):
 
 
 def main():
+    ctr = 0
     try:
         while True:
-            ctr=0
             message = asyncio.run(get_request())
             asyncio.run(action_based_on_request(socket, message, ctr))
     except KeyboardInterrupt:

@@ -24,9 +24,8 @@ def cut_epochs_by_event_id_offline(event_dict, subject_id, use_autoreject, chann
     """ extract events from raw data """
     raw_events = raw.info['events']
     events = [event['list'].tolist() for event in raw_events]
-    print(events)
     print(len(events))
-    epochs = mne.Epochs(raw, events, event_dict, -0.1, 1.0, (-0.1, None), preload=True)
+    epochs = mne.Epochs(raw, events, event_dict, -0.2, 1.0, (-0.2, None), preload=True)
     # epochs['up'].plot_psd(picks='eeg')
     if use_autoreject is True:
         epochs = use_autoreject_to_remove_noise(epochs)
@@ -34,18 +33,18 @@ def cut_epochs_by_event_id_offline(event_dict, subject_id, use_autoreject, chann
     epochs.save(get_path('epochs')+fname, overwrite=True, fmt='single', verbose=True)
 
 
-def cut_epochs_by_event_id_online(subject_id, use_autoreject, channel_num, ctr):
-    file_path = get_path('preprocessed_data') + f'/sub_{subject_id}_preprocessed_{channel_num}_raw.fif'
+def cut_epochs_by_event_id_online(event_dict, subject_id, use_autoreject, channel_num, ctr):
+    file_path = get_path('preprocessed_data') + f'/sub_{subject_id}_preprocessed_{channel_num}_{ctr}_raw.fif'
     raw = read_raw_fif(file_path)
     """ extract events from raw data """
     raw_events = raw.info['events']
     events = [event['list'].tolist() for event in raw_events]
-    epochs = mne.Epochs(raw, events, -0.1, 2.0, preload=True)
+    epoch = mne.Epochs(raw, events, event_dict, -0.1, 2.0, preload=True)
     # epochs['up'].plot_psd(picks='eeg')
     if use_autoreject is True:
-        epochs = use_autoreject_to_remove_noise(epochs)
+        epochs = use_autoreject_to_remove_noise(epoch)
     fname = f'/sub_{subject_id}_{ctr}_epo.fif'
-    epochs.save(get_path('epochs')+fname, overwrite=True, fmt='single', verbose=True)
+    epoch.save(get_path('epochs')+fname, overwrite=True, fmt='single', verbose=True)
 
 
 def use_autoreject_to_remove_noise(epochs):

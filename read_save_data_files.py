@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
 import mne
+import json
 
 datatype = 'eeg'
 extension = '.fif'
@@ -31,7 +32,7 @@ def save_preprocessed_data(raw, subject, channel_num, is_online, ctr=None):
         # Path does not exist yet, create it
         os.makedirs(path)
     if is_online:
-        raw.save(os.path.join(path, set_file_name(subject, level, channel_num, ctr)), fmt='single', overwrite=True)
+        raw.save(os.path.join(path, set_file_name(subject, level, channel_num, ctr)), fmt='single', overwrite=False)
     else:
         raw.save(os.path.join(path, set_file_name(subject, level, channel_num)), fmt='single', overwrite=True)
 
@@ -44,3 +45,8 @@ def read_fif_epochs(filepath):
     return mne.read_epochs(filepath, preload=True)
 
 
+def get_event_dict(subject_id) -> dict:
+    file_name = f"{get_path('offline_module_data')}\\subject_{subject_id}.json"
+    file = open(file_name)
+    data = json.load(file)
+    return data['Event_Dictionary']
