@@ -2,6 +2,7 @@ from datetime import datetime
 import os
 import mne
 import json
+from db_connections import save_preprocessed_file_location_in_db, save_epochs_file_location_in_db, query_for_index
 
 datatype = 'eeg'
 extension = '.fif'
@@ -25,16 +26,24 @@ def get_path(directory_name):
     return path
 
 
-def save_preprocessed_data(raw, subject, channel_num, is_online, ctr=None):
+def save_preprocessed_data_offline(raw, subject, channel_num):
     level = 'preprocessed'
     path = get_path('preprocessed_data')
     if not os.path.exists(path):
         # Path does not exist yet, create it
         os.makedirs(path)
-    if is_online:
-        raw.save(os.path.join(path, set_file_name(subject, level, channel_num, ctr)), fmt='single', overwrite=False)
-    else:
-        raw.save(os.path.join(path, set_file_name(subject, level, channel_num)), fmt='single', overwrite=True)
+    raw.save(os.path.join(path, set_file_name(subject, level, channel_num)), fmt='single', overwrite=True)
+
+
+async def save_preprocessed_data_online(raw, subject, channel_num):
+    level = 'preprocessed'
+    path = get_path('preprocessed_data')
+    if not os.path.exists(path):
+        # Path does not exist yet, create it
+        os.makedirs(path)
+    index = await query_for_index() + 1
+    raw.save(os.path.join(path, set_file_name(subject, level, channel_num, index)), fmt='single', overwrite=False)
+    await save_preprocessed_file_location_in_db(index, subject, f'{path}/{set_file_name(subject, level, channel_num, index)}')
 
 
 def read_raw_fif(filepath):
@@ -46,7 +55,7 @@ def read_fif_epochs(filepath):
 
 
 def get_event_dict(subject_id) -> dict:
-    file_name = f"{get_path('offline_module_data')}\\subject_{subject_id}.json"
+    file_name = f"{get_path('offline_module_data')}/subject_{subject_id}.json"
     file = open(file_name)
     data = json.load(file)
     return data['Event_Dictionary']

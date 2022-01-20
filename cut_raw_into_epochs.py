@@ -1,4 +1,5 @@
 from read_save_data_files import get_path, read_raw_fif
+from db_connections import query_for_index, save_epochs_file_location_in_db
 
 from autoreject import AutoReject
 import mne
@@ -33,7 +34,7 @@ def cut_epochs_by_event_id_offline(event_dict, subject_id, use_autoreject, chann
     epochs.save(get_path('epochs')+fname, overwrite=True, fmt='single', verbose=True)
 
 
-def cut_epochs_by_event_id_online(event_dict, subject_id, use_autoreject, channel_num, ctr):
+async def cut_epochs_by_event_id_online(event_dict, subject_id, use_autoreject, channel_num, ctr):
     file_path = get_path('preprocessed_data') + f'/sub_{subject_id}_preprocessed_{channel_num}_{ctr}_raw.fif'
     raw = read_raw_fif(file_path)
     """ extract events from raw data """
@@ -43,8 +44,11 @@ def cut_epochs_by_event_id_online(event_dict, subject_id, use_autoreject, channe
     # epochs['up'].plot_psd(picks='eeg')
     if use_autoreject is True:
         epochs = use_autoreject_to_remove_noise(epoch)
-    fname = f'/sub_{subject_id}_{ctr}_epo.fif'
+    index = query_for_index()
+    fname = f'/sub_{subject_id}_{index}_epo.fif'
     epoch.save(get_path('epochs')+fname, overwrite=True, fmt='single', verbose=True)
+    await save_epochs_file_location_in_db(f"{get_path('epochs')}{fname}")
+
 
 
 def use_autoreject_to_remove_noise(epochs):

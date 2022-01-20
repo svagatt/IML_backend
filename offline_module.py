@@ -1,4 +1,4 @@
-from read_save_data_files import read_raw_fif, get_path, save_preprocessed_data
+from read_save_data_files import read_raw_fif, get_path, save_preprocessed_data_offline
 import preprocessing
 import cut_raw_into_epochs
 import feature_extraction
@@ -13,7 +13,6 @@ features = ['wavelet_dec', 'hurst_exp', 'skewness', 'std', 'hjorth_complexity', 
 event_dict = {'Schraube_start': 10, 'Platine_start': 20, 'Gehäuse_start': 30, 'Werkbank_start': 40, 'Fließband_start': 50, 'Boden_start': 60, 'Lege_start': 70, 'Halte_start': 80, 'Hebe_start': 90}
 subject_id = 777
 auto_reject = False
-is_online = False
 parameters = Parameters(subject_id, filter_type, auto_reject, features, 64)
 random_state = subject_id
 
@@ -23,9 +22,9 @@ raw_data = read_raw_fif(f'{path}/subject_{subject_id}_raw.fif')
 sample_rate = raw_data.info['sfreq']
 
 preprocessed_data = preprocessing.preprocess(raw_data, filter_type)
-save_preprocessed_data(preprocessed_data, subject_id, 64, is_online)
+save_preprocessed_data_offline(preprocessed_data, subject_id, 64)
 cut_raw_into_epochs.cut_epochs_by_event_id_offline(event_dict, subject_id, auto_reject, 64)
 
 loop = asyncio.get_event_loop()
-loop.run_until_complete(feature_extraction.extract_features_offline(parameters, sample_rate, event_dict))
-loop.run_until_complete(elm_classifier.classify_offline(random_state, parameters))
+loop.run_until_complete(feature_extraction.extract_features(parameters, sample_rate, event_dict))
+loop.run_until_complete(elm_classifier.train_model(random_state, parameters))

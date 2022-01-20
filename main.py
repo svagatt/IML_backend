@@ -1,5 +1,5 @@
 from preprocessing import preprocess
-from cut_raw_into_epochs import cut_epochs_by_event_id
+from cut_raw_into_epochs import cut_epochs_by_event_id_offline
 from feature_extraction import extract_features
 from classes import Parameters
 
@@ -19,7 +19,7 @@ timestamp = datetime.now()
 dbname = 'eeg_data_info'
 
 """ subject info, parameters and methods """
-subject: str = '2'
+subject: str = '17'
 event_dict: dict = {'up': 21, 'left': 22, 'right': 23, 'pick': 24, 'push': 25}
 random_state = np.random.RandomState(42)
 feature_extraction_methods = ['wavelet_dec', 'hurst_exp', 'skewness', 'std', 'hjorth_complexity', 'higuchi_fd', 'spect_entropy', 'svd_fisher_info'
@@ -47,15 +47,15 @@ raw.drop_channels(['x_dir', 'y_dir', 'z_dir'])
 raw_data = preprocess(raw, filter_methods, channels)
 # raw_data.plot(block=True, scalings='auto')
 """ save preprocessed data into a fif file """
-read_save_data_files.save_preprocessed_data(raw_data, subject, channel_num, False)
+read_save_data_files.save_preprocessed_data_offline(raw_data, subject, channel_num)
 
 """ cut raw data into epochs based on the data """
-cut_epochs_by_event_id(event_dict, subject, use_autoreject, channel_num)
+cut_epochs_by_event_id_offline(event_dict, subject, use_autoreject, channel_num)
 """ extract relevant features using mne.features"""
 loop = asyncio.get_event_loop()
 loop.run_until_complete(extract_features(parameters, samplerate, event_dict))
 """ Classify """
-loop.run_until_complete(elm_classifier.classify_offline(random_state, parameters))
+loop.run_until_complete(elm_classifier.train_model(random_state, parameters))
 """Prevent program from stopping"""
 print('-----Press enter to exit------')
 if input():
