@@ -21,9 +21,8 @@ def get_epochs_path_offline(sub_id):
 
 
 async def get_epochs_path_online():
-    cursor = await get_latest_file_location_entry()
-    async for doc in cursor:
-        file_path = doc['epochs_data_location']
+    doc = await get_latest_file_location_entry()
+    file_path = doc['epochs_data_location']
     return file_path
 
 

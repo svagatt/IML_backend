@@ -76,7 +76,7 @@ async def get_features_labels_from_db(parameters, is_online):
             labels_list.append(value['label'])
         return features_list, labels_list
     else:
-        cursor = db[collection_name].find({'hashid': get_hash_for_preprocessed_data(sub_id, channels)}, {'features': True, '        label': True})
+        cursor = db[collection_name].find({'hashid': get_hash_for_preprocessed_data(sub_id, channels)}, {'features': True, 'label': True})
         async for doc in cursor:
             value = dict(doc)
             features_list.append(value['features'])

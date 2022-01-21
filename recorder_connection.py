@@ -5,13 +5,13 @@ from EEGTools.Recorders.LiveAmpRecorder.Backends import Sawtooth as backend
 import asyncio
 
 # initialize the recorder and connect it
-rec = Recorder(backend=backend.get_backend())
+rec = Recorder()
 rec.connect()
 
 
 async def start_recording():
     rec.start_recording()
-    await asyncio.sleep(3)
+    await asyncio.sleep(2)
     rec.refresh()
 
 
@@ -19,10 +19,10 @@ def set_event_with_offset(event_id, time):
     offset = 500 * time
     rec.refresh()
     rec.set_event(event_id, -offset)
+    print('-------Event set--------')
 
 
 def get_latest_data_from_buffer():
-    rec.refresh()
     data = rec.get_new_data()
     return data
 

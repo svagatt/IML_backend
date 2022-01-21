@@ -5,7 +5,7 @@ import motor.motor_asyncio
 import pickle
 
 
-sub_id = '2'
+sub_id = '111'
 
 
 def client():
@@ -43,14 +43,18 @@ async def store_accuracy_results_in_db(parameters):
 
 async def get_latest_file_location_entry():
     db = open_database()
-    cursor = await (db['file_locations'].find().sort({'_id': DESCENDING}).limit(1)).todict()
-    return cursor
+    doc = await db['file_locations'].find_one(sort=[('_id', DESCENDING)])
+    return doc
 
 
 async def query_for_index():
-    cursor = await get_latest_file_location_entry()
-    index = cursor['index']
-    return index if index is not None else 0
+    db = open_database()
+    if 'file_locations' not in await db.list_collection_names():
+        return 0
+    else:
+        doc = await get_latest_file_location_entry()
+        index = doc['index']
+        return index
 
 
 async def save_preprocessed_file_location_in_db(index, subject_id, file_location):
@@ -63,15 +67,22 @@ async def save_preprocessed_file_location_in_db(index, subject_id, file_location
 
 
 async def save_epochs_file_location_in_db(file_location):
-    db=open_database()
+    db = open_database()
     index = await query_for_index()
     await db['file_locations'].update_one({'index': index}, {'$set': {'epochs_data_location': file_location}})
 
 
+async def get_preprocessed_file_location():
+    db = open_database()
+    doc = await db['file_locations'].find_one(sort=[('_id', DESCENDING)], limit=1)
+    location = doc['preprocessed_data_location']
+    return location
+
+
 async def load_latest_model():
     db = open_database()
-    cursor = await (db['trained_models'].find().sort({'_id': DESCENDING}).limit(1)).todict()
-    model = pickle.load(cursor['model'])
+    doc = await db['trained_models'].find_one(sort=[('_id', DESCENDING)], limit=1)
+    model = pickle.load(doc['model'])
     return model
 
 
@@ -94,31 +105,27 @@ async def store_label_encoder_in_db(le):
 
 async def get_label_encoder_from_db():
     db = open_database()
-    cursor = await (db['label_encoder'].find().sort({'_id': DESCENDING}).limit(1)).todict()
-    le = cursor['le']
+    doc = await db['label_encoder'].find_one(sort=[('_id', DESCENDING)], limit=1)
+    le = doc['le']
     return le
 
 
 async def get_latest_features_from_db(parameters):
     db = open_database()
     features = []
-    sub_id = parameters.subject
     filters = parameters.filters
     autoreject = parameters.autoreject
     collection_name = f'features_{sub_id}_{filters}_{autoreject}'
-    cursor = await db[collection_name].find({}, {'features': True}).sort({'_id': DESCENDING}).limit(1)
-    async for doc in cursor:
-        value = dict(doc)
-        features.append(value['features'])
+    doc = await db[collection_name].find_one(projection={'features': True}, sort=[('_id', DESCENDING)], limit=1)
+    features.append(doc['features'])
     return features
 
 
 async def reset_label_in_db(label, parameters):
     db = open_database()
-    sub_id = parameters.subject
     filters = parameters.filters
     autoreject = parameters.autoreject
     collection_name = f'features_{sub_id}_{filters}_{autoreject}'
-    cursor = await (db[collection_name].find({}, {'index': True}).sort({'_id': DESCENDING}).limit(1)).todict()
-    index = cursor['index']
+    doc = await db[collection_name].find_one(projection={'index': True}, sort=[('_id', DESCENDING)], limit=1)
+    index = doc['index']
     await db[collection_name].update_one({'index': index}, {'label': label})

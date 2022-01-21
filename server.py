@@ -3,25 +3,27 @@ import zmq.asyncio
 from online_module import classify_label, find_event_id_of_label, set_right_label, retrain_model
 from recorder_connection import start_recording, set_event_with_offset
 from codetiming import Timer
+import time
 
 context = zmq.asyncio.Context()
 socket = context.socket(zmq.REP)
 socket.bind('tcp://*:5555')
 # windows asyncio warning trigger
-# asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 timer = Timer()
 is_timer_running = False
 
 
 def start_timer():
-    timer.start()
+    start = time.time()
     is_timer_running = True
+    return start
 
 
 def stop_timer():
-    time = timer.stop()
+    stop = time.time()
     is_timer_running = False
-    return time
+    return stop
 
 
 async def get_request():
@@ -37,23 +39,22 @@ async def get_request():
 
 async def action_based_on_request(repsocket, request_message):
     if request_message == 'RequestToStartRecording':
-        await asyncio.sleep(2)
+        await start_recording()
         await repsocket.send_string('enabled')
     elif request_message == 'RequestForClassifiedLabel':
         set_event_with_offset(99, 3)
-        if not is_timer_running:
-            timer.start()
-        label = await classify_label()
+        await classify_label()
+        label = 'Schraube'
         await repsocket.send_string(label)
     elif 'RequestToCorrectLabel' in request_message:
         label = request_message.split()[-1]
-        elapsed_time = timer.stop()
+        elapsed_time = 5
         set_event_with_offset(find_event_id_of_label(label), int(round(elapsed_time, 0))+3)
         await set_right_label(label)
         await repsocket.send_string('LabelCorrected')
     elif 'RequestToSetLabel' in request_message:
         label = request_message.split()[-1]
-        elapsed_time = timer.stop()
+        elapsed_time = 4
         set_event_with_offset(find_event_id_of_label(label), int(round(elapsed_time, 0))+3)
         await set_right_label(label)
         await repsocket.send_string('LabelSet')
@@ -61,6 +62,9 @@ async def action_based_on_request(repsocket, request_message):
         await retrain_model()
         await repsocket.send_string('Retrained')
         print('response to retrain sent')
+    elif request_message == 'RequestToAddSpacekeyEvent':
+        set_event_with_offset(39, 1)
+        await repsocket.send_string('EventAdded')
 
 
 def main():

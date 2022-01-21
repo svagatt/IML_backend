@@ -98,7 +98,7 @@ frameTolerance = 0.001  # how close to onset before 'same' frame
 # events that occur during the recording
 event_list = {'Schraube_start': 10, 'Platine_start': 20, 'Gehäuse_start': 30, 'Werkbank_start': 40, 'Fließband_start': 50, 'Boden_start': 60, 'Lege_start': 70, 'Halte_start': 80, 'Hebe_start': 90,
               'Schraube_end': 11, 'Platine_end': 21, 'Gehäuse_end': 31, 'Werkbank_end': 41, 'Fließband_end': 51, 'Boden_end': 61, 'Lege_end': 71, 'Halte_end': 81, 'Hebe_end': 91, 
-              'Pause_start':12, 'Pause_end': 22, 'Space_key': 32, 'Dummy': 99}
+              'Pause_start':19, 'Pause_end': 29, 'Space_key': 39, 'Mouse_click': 49, 'Dummy': 99}
 
 # initialize recorder
 rec = Recorder()
@@ -156,7 +156,7 @@ before_cross_pause = visual.TextStim(win=win, name='before_cross_pause',
     depth=-1.0);
 fix_cross = visual.ShapeStim(
     win=win, name='fix_cross', vertices='cross',
-    size=(0.5, 0.5),
+    size=(0.1, 0.1),
     ori=0.0, pos=(0, 0),
     lineWidth=1.0,     colorSpace='rgb',  lineColor='white', fillColor='white',
     opacity=None, depth=-2.0, interpolate=True)
@@ -169,7 +169,7 @@ text_2 = visual.TextStim(win=win, name='text_2',
     depth=-3.0);
 fix_cross2 = visual.ShapeStim(
     win=win, name='fix_cross2', vertices='cross',
-    size=(0.5, 0.5),
+    size=(0.1, 0.1),
     ori=0.0, pos=(0, 0),
     lineWidth=1.0,     colorSpace='rgb',  lineColor='white', fillColor='white',
     opacity=None, depth=-4.0, interpolate=True)
@@ -182,7 +182,7 @@ text_3 = visual.TextStim(win=win, name='text_3',
     depth=-5.0);
 fix_cross3 = visual.ShapeStim(
     win=win, name='fix_cross3', vertices='cross',
-    size=(0.5, 0.5),
+    size=(0.1, 0.1),
     ori=0.0, pos=(0, 0),
     lineWidth=1.0,     colorSpace='rgb',  lineColor='white', fillColor='white',
     opacity=None, depth=-6.0, interpolate=True)
@@ -621,7 +621,7 @@ for thisRepeatx3 in repeatx3:
             pause_text.tStartRefresh = tThisFlipGlobal  # on global time
             win.timeOnFlip(pause_text, 'tStartRefresh')  # time at next scr refresh
             pause_text.setAutoDraw(True)
-            set_event(12)
+            set_event(19)
         if pause_text.status == STARTED:
             # is it time to stop? (based on global clock, using actual start)
             if tThisFlipGlobal > pause_text.tStartRefresh + 60-frameTolerance:
@@ -678,7 +678,7 @@ for thisRepeatx3 in repeatx3:
             if len(_space_key_1_allKeys):
                 space_key_1.keys = _space_key_1_allKeys[-1].name  # just the last key pressed
                 space_key_1.rt = _space_key_1_allKeys[-1].rt
-                set_event(32)
+                set_event(39)
                 # a response ends the routine
                 continueRoutine = False
         
@@ -714,7 +714,7 @@ for thisRepeatx3 in repeatx3:
         repeatx3.addData('space_key_1.rt', space_key_1.rt)
     repeatx3.addData('space_key_1.started', space_key_1.tStartRefresh)
     repeatx3.addData('space_key_1.stopped', space_key_1.tStopRefresh)
-    set_event(22)
+    set_event(29)
 
 # completed 3.0 repeats of 'repeatx3'
 
