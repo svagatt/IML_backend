@@ -8,13 +8,17 @@ import elm_classifier
 import asyncio
 
 # all the necessary arguments
-filter_type = 'cheby2'
-features = ['wavelet_dec', 'hurst_exp', 'skewness', 'std', 'hjorth_complexity', 'higuchi_fd', 'spect_entropy', 'svd_fisher_info', 'app_entropy', 'pow_freq_bands']
-event_dict = {'Schraube_start': 10, 'Platine_start': 20, 'Gehäuse_start': 30, 'Werkbank_start': 40, 'Fließband_start': 50, 'Boden_start': 60, 'Lege_start': 70, 'Halte_start': 80, 'Hebe_start': 90}
-subject_id = 111
-auto_reject = False
-parameters = Parameters(subject_id, filter_type, auto_reject, features, 64)
-random_state = subject_id
+filter_type: str = 'cheby2'
+features: list = ['wavelet_dec', 'hurst_exp', 'skewness', 'std', 'hjorth_complexity', 'higuchi_fd', 'spect_entropy', 'svd_fisher_info', 'app_entropy', 'pow_freq_bands']
+# features: list = ['wavelet_dec', 'mean', 'skewness', 'std', 'variance']
+# event_dict: dict = {'up': 21, 'left': 22, 'right': 23, 'pick': 24, 'push': 25}
+event_dict: dict = {'Schraube_start': 10, 'Platine_start': 20, 'Gehäuse_start': 30, 'Werkbank_start': 40, 'Fließband_start': 50, 'Boden_start': 60, 'Lege_start': 70, 'Halte_start': 80, 'Hebe_start': 90}
+
+
+subject_id: str = '111'
+auto_reject: bool = False
+parameters: Parameters = Parameters(subject_id, filter_type, auto_reject, features, 64)
+random_state: int = 123
 
 # open the offline recorded data
 path = get_path('offline_module_data')

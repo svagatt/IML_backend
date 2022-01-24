@@ -12,16 +12,16 @@ import pickle
 import mne
 
 # all the necessary arguments
-filter_type = 'cheby2'
-features = ['wavelet_dec', 'hurst_exp', 'skewness', 'std', 'hjorth_complexity', 'higuchi_fd', 'spect_entropy', 'svd_fisher_info', 'app_entropy', 'pow_freq_bands']
-subject_id = 111
+filter_type: str = 'cheby2'
+features: list = ['wavelet_dec', 'hurst_exp', 'skewness', 'std', 'hjorth_complexity', 'higuchi_fd', 'spect_entropy', 'svd_fisher_info', 'app_entropy', 'pow_freq_bands']
+subject_id: int = 17
 # events that occur during the recording
-event_dict = {'Schraube_start': 10, 'Platine_start': 20, 'Gehäuse_start': 30, 'Werkbank_start': 40, 'Fließband_start': 50, 'Boden_start': 60, 'Lege_start': 70, 'Halte_start': 80, 'Hebe_start': 90}
-auto_reject = False
-parameters = Parameters(subject_id, filter_type, auto_reject, features, 64)
-sample_rate = 500
-random_state = subject_id
-is_online = True
+event_dict: dict = {'Schraube_start': 10, 'Platine_start': 20, 'Gehäuse_start': 30, 'Werkbank_start': 40, 'Fließband_start': 50, 'Boden_start': 60, 'Lege_start': 70, 'Halte_start': 80, 'Hebe_start': 90}
+auto_reject: bool = False
+parameters: Parameters = Parameters(subject_id, filter_type, auto_reject, features, 64)
+sample_rate: float = 500
+random_state: int = subject_id
+is_online: bool = True
 
 
 async def preprocessing_steps():

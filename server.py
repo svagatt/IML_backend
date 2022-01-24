@@ -9,7 +9,7 @@ context = zmq.asyncio.Context()
 socket = context.socket(zmq.REP)
 socket.bind('tcp://*:5555')
 # windows asyncio warning trigger
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+# asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 timer = Timer()
 is_timer_running = False
 
@@ -39,23 +39,22 @@ async def get_request():
 
 async def action_based_on_request(repsocket, request_message):
     if request_message == 'RequestToStartRecording':
-        await start_recording()
+        # await start_recording()
         await repsocket.send_string('enabled')
     elif request_message == 'RequestForClassifiedLabel':
-        set_event_with_offset(99, 3)
-        await classify_label()
+        # await classify_label()
         label = 'Schraube'
         await repsocket.send_string(label)
     elif 'RequestToCorrectLabel' in request_message:
-        label = request_message.split()[-1]
-        elapsed_time = 5
-        set_event_with_offset(find_event_id_of_label(label), int(round(elapsed_time, 0))+3)
-        await set_right_label(label)
+        # label = request_message.split()[-1]
+        # elapsed_time = 5
+        # set_event_with_offset(find_event_id_of_label(label), -(elapsed_time+3))
+        # await set_right_label(label)
         await repsocket.send_string('LabelCorrected')
     elif 'RequestToSetLabel' in request_message:
         label = request_message.split()[-1]
         elapsed_time = 4
-        set_event_with_offset(find_event_id_of_label(label), int(round(elapsed_time, 0))+3)
+        set_event_with_offset(find_event_id_of_label(label), -(elapsed_time+3))
         await set_right_label(label)
         await repsocket.send_string('LabelSet')
     elif request_message == 'RequestToRetrainModel':
@@ -63,7 +62,9 @@ async def action_based_on_request(repsocket, request_message):
         await repsocket.send_string('Retrained')
         print('response to retrain sent')
     elif request_message == 'RequestToAddSpacekeyEvent':
-        set_event_with_offset(39, 1)
+        set_event_with_offset(39, -1)
+        set_event_with_offset(99, 2)
+
         await repsocket.send_string('EventAdded')
 
 

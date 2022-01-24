@@ -1,4 +1,4 @@
-from pyoselm import OSELMClassifier
+from pyoselm import OSELMClassifier, ELMClassifier
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
 import pickle
@@ -24,7 +24,8 @@ async def prepare_test_train_data(parameters, randomstate, is_online=None):
 async def train_model(randomstate, parameters):
     X_train, X_test, y_train, y_test = await prepare_test_train_data(parameters, randomstate)
     models = {
-        'onlineELM': OSELMClassifier(n_hidden=300, activation_func='sigmoid', random_state=randomstate),
+        'ELM': ELMClassifier(n_hidden=300, rbf_width=1.0, activation_func='sigmoid', random_state=randomstate),
+        'onlineELM': OSELMClassifier(n_hidden=300, activation_func='tanh', random_state=randomstate),
     }
 
     for name, model in models.items():
