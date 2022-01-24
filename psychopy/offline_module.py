@@ -54,7 +54,7 @@ def stop_recording():
     print('Recording has been stopped!')
     rec.disconnect()
     rec.set_event_dict(event_list)
-    rec.save(file_prefix=f"subject_{expInfo['participant']}_raw", path=get_path(folder_name), description='Offline Module Data Recording', save_additional = True, subject_info = expInfo)
+    rec.save(file_prefix=f"subject_{expInfo['participant']}_raw", path=get_path(folder_name), description='Offline Module Data Recording', save_additional=True, subject_info=expInfo)
     rec.refresh()
     rec.clear()
 

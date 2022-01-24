@@ -38,12 +38,15 @@ def cut_epochs_by_event_id_offline(event_dict, subject_id, use_autoreject, chann
 async def cut_epochs_by_event_id_online(subject_id, use_autoreject):
 
     file_path = await get_preprocessed_file_location()
-    event_dict = {'Dummy' : 99}
+    event_dict = {'Dummy': 99}
     raw = read_raw_fif(file_path)
     """ extract events from raw data """
     raw_events = raw.info['events']
+    print(raw.first_samp, raw.first_time)
     events = [event['list'].tolist() for event in raw_events]
-    epoch = mne.Epochs(raw, events, event_dict, -0.1, 2.0, preload=True)
+    print(events)
+    epoch = mne.Epochs(raw, events, event_dict, -0.1, 2.0, (None, 0.0), preload=True, reject=None, reject_by_annotation=None)
+    print(epoch.drop_log)
     # epochs['up'].plot_psd(picks='eeg')
     if use_autoreject is True:
         epochs = use_autoreject_to_remove_noise(epoch)

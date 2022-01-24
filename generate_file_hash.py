@@ -14,7 +14,7 @@ def sha256sum(filename):
 
 def get_hash_for_preprocessed_data(sub_id, channel_num, is_online=None, ctr=None):
     if is_online:
-        file_path = f'{os.getcwd()}/preprocessed_data/sub_{sub_id}_preprocessed_{channel_num}_{ctr}_raw.fif'
+        file_path = f'{os.getcwd()}/preprocessed_data/sub_{sub_id}_preprocessed_{ctr}_raw.fif'
     else:
         file_path = f'{os.getcwd()}/preprocessed_data/sub_{sub_id}_preprocessed_{channel_num}_raw.fif'
     return sha256sum(file_path)

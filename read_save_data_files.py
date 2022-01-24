@@ -12,7 +12,7 @@ timestamp_str = timestamp.strftime("%d-%b-%Y (%H:%M:%S.%f)")
 
 def set_file_name(subject, level, channel_num, ctr=None):
     if ctr is not None:
-        filename = f'sub_{subject}_{level}_{channel_num}_{ctr}_raw.fif'
+        filename = f'sub_{subject}_{level}_{ctr}_raw.fif'
     else:
         filename = f'sub_{subject}_{level}_{channel_num}_raw.fif'
     return filename
@@ -59,3 +59,9 @@ def get_event_dict(subject_id) -> dict:
     file = open(file_name)
     data = json.load(file)
     return data['Event_Dictionary']
+
+
+def set_montage():
+    montage_path = get_path('montage_folder') + '/AC-64.bvef'
+    montage = mne.channels.read_custom_montage(montage_path, head_size=0.085)
+    return montage

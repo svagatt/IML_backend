@@ -5,7 +5,7 @@ import motor.motor_asyncio
 import pickle
 
 
-sub_id = '111'
+sub_id = '20'
 
 
 def client():
@@ -82,8 +82,9 @@ async def get_preprocessed_file_location():
 async def load_latest_model():
     db = open_database()
     doc = await db['trained_models'].find_one(sort=[('_id', DESCENDING)], limit=1)
-    model = pickle.load(doc['model'])
-    return model
+    with open(doc['model'], 'rb') as pickled_file:
+        model = pickle.load(pickled_file)
+        return model
 
 
 async def store_model_in_db(name, trained_model):
@@ -129,3 +130,7 @@ async def reset_label_in_db(label, parameters):
     doc = await db[collection_name].find_one(projection={'index': True}, sort=[('_id', DESCENDING)], limit=1)
     index = doc['index']
     await db[collection_name].update_one({'index': index}, {'label': label})
+
+
+def close_database():
+    client().close_session()
