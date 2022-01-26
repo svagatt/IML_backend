@@ -98,7 +98,7 @@ frameTolerance = 0.001  # how close to onset before 'same' frame
 # events that occur during the recording
 event_list = {'Schraube_start': 10, 'Platine_start': 20, 'Gehäuse_start': 30, 'Werkbank_start': 40, 'Fließband_start': 50, 'Boden_start': 60, 'Lege_start': 70, 'Halte_start': 80, 'Hebe_start': 90,
               'Schraube_end': 11, 'Platine_end': 21, 'Gehäuse_end': 31, 'Werkbank_end': 41, 'Fließband_end': 51, 'Boden_end': 61, 'Lege_end': 71, 'Halte_end': 81, 'Hebe_end': 91, 
-              'Pause_start':19, 'Pause_end': 29, 'Space_key': 39, 'Mouse_click': 49, 'Dummy': 99}
+              'Pause_start': 19, 'Pause_end': 29, 'Space_key': 39, 'Mouse_click': 49, 'Dummy': 99}
 
 # initialize recorder
 rec = Recorder()

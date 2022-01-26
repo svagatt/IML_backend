@@ -8,8 +8,8 @@ from db_connections import open_database, store_accuracy_results_in_db, store_mo
 from generate_file_hash import get_hash_for_preprocessed_data
 from classes import Parameters
 
-db = open_database()
 le = preprocessing.LabelEncoder()
+db = open_database()
 
 
 async def prepare_test_train_data(parameters, randomstate, is_online=None):

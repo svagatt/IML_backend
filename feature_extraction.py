@@ -27,19 +27,20 @@ async def get_epochs_path_online():
 
 
 async def extract_features(parameters, samplerate, event_dict, is_online=None):
+    db = open_database()
     sub_id = parameters.subject
     channel_num = parameters.channels
     feature_extraction_methods = parameters.features
     feature_list = copy.deepcopy(feature_extraction_methods)
-    db = open_database()
+    event_keys = event_dict.keys()
     if is_online:
         ctr = await query_for_index()
         filehash = get_hash_for_preprocessed_data(sub_id, channel_num, is_online, ctr)
         epochs = read_fif_epochs(await get_epochs_path_online())
+        event_keys = ['Dummy']
     else:
         filehash = get_hash_for_preprocessed_data(sub_id, channel_num)
         epochs = read_fif_epochs(get_epochs_path_offline(sub_id))
-    event_keys = event_dict.keys()
     collection_name = get_collection_name(parameters)
     if collection_name not in await db.list_collection_names():
         print('--------Creating Database------------')
@@ -50,6 +51,19 @@ async def extract_features(parameters, samplerate, event_dict, is_online=None):
         print('------Database already exists--------')
         print('------Adding features------')
         await extract_feature_to_collection(event_keys, epochs, feature_list, samplerate, db, parameters, filehash, is_online)
+
+
+async def extract_feature_to_collection(event_keys, epochs, feature_list, samplerate, db, parameters, filehash, is_online):
+    for event in event_keys:
+        data = epochs.get_data(item=event)
+        print(feature_list)
+        if 'wavelet_dec' in feature_list:
+            features_wavelet_npy = wavelet.feature_vector(data)
+            feature_list.remove('wavelet_dec')
+        features_mne_npy = mne_features.feature_extraction.extract_features(data, samplerate, feature_list)
+        features_npy = np.column_stack((features_wavelet_npy, features_mne_npy))
+        feature_list.append('wavelet_dec')
+        await create_collection_with_features(parameters, db, features_npy, event, filehash, is_online)
 
 
 async def create_collection_with_features(parameters, db, features_npy, label, filehash, is_online):
@@ -68,6 +82,7 @@ async def create_collection_with_features(parameters, db, features_npy, label, f
                     'label': label,
                     'online': 'True' if is_online is not None else 'False'
                     }
+        print(index)
         await insert_doc_in_collection(feature_collection, doc_dict)
 
 
@@ -82,13 +97,3 @@ def get_collection_name(parameters) -> str:
     collection_name = f'features_{sub_id}_{filters}_{autoreject}'
     return collection_name
 
-
-async def extract_feature_to_collection(event_keys, epochs, feature_list, samplerate, db, parameters, filehash, is_online):
-    for event in event_keys:
-        data = epochs.get_data(item=event)
-        if 'wavelet_dec' in feature_list:
-            features_wavelet_npy = wavelet.feature_vector(data)
-            feature_list.remove('wavelet_dec')
-        features_mne_npy = mne_features.feature_extraction.extract_features(data, samplerate, feature_list)
-        features_npy = np.column_stack((features_wavelet_npy, features_mne_npy))
-        await create_collection_with_features(parameters, db, features_npy, event, filehash, is_online)

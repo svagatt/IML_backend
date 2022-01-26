@@ -47,7 +47,7 @@ async def save_preprocessed_data_online(raw, subject, channel_num):
 
 
 def read_raw_fif(filepath):
-    return mne.io.read_raw_fif(filepath, preload=True).load_data()
+    return mne.io.read_raw_fif(filepath, preload=True)
 
 
 def read_fif_epochs(filepath):

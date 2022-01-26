@@ -17,10 +17,10 @@ event_dict: dict = {'Schraube_start': 10, 'Platine_start': 20, 'Gehäuse_start':
 
 
 
-subject_id: str = '20'
+subject_id: str = '111'
 auto_reject: bool = False
 parameters: Parameters = Parameters(subject_id, filter_type, auto_reject, features, 64)
-random_state: int = 20
+random_state: int = 111
 
 # open the offline recorded data
 path = get_path('offline_module_data')

@@ -1,8 +1,9 @@
 from read_save_data_files import get_path, read_raw_fif
-from db_connections import query_for_index, save_epochs_file_location_in_db, get_preprocessed_file_location
+from db_connections import query_for_index, save_epochs_file_location_in_db, get_preprocessed_file_location, insert_event_into_db
 
 from autoreject import AutoReject
 import mne
+import numpy as np
 
 
 def cut_epochs_by_event_id(event_dict, subject_id, use_autoreject, channel_num):
@@ -25,9 +26,8 @@ def cut_epochs_by_event_id_offline(event_dict, subject_id, use_autoreject, chann
     """ extract events from raw data """
     raw_events = raw.info['events']
     events = [event['list'].tolist() for event in raw_events]
-
     print(len(events))
-    epochs = mne.Epochs(raw, events, event_dict, -0.2, 1.0, (-0.2, None), preload=True)
+    epochs = mne.Epochs(raw, events, event_dict, -0.2, 3.0, (-0.2, None), preload=True)
     # epochs['up'].plot_psd(picks='eeg')
     if use_autoreject is True:
         epochs = use_autoreject_to_remove_noise(epochs)
@@ -35,18 +35,17 @@ def cut_epochs_by_event_id_offline(event_dict, subject_id, use_autoreject, chann
     epochs.save(get_path('epochs')+fname, overwrite=True, fmt='single', verbose=True)
 
 
-async def cut_epochs_by_event_id_online(subject_id, use_autoreject):
+async def cut_epochs_by_event_id_online(subject_id, use_autoreject, event_dict):
 
     file_path = await get_preprocessed_file_location()
-    event_dict = {'Dummy': 99}
     raw = read_raw_fif(file_path)
+    print(raw)
     """ extract events from raw data """
     raw_events = raw.info['events']
-    print(raw.first_samp, raw.first_time)
     events = [event['list'].tolist() for event in raw_events]
+    await insert_event_into_db(events)
     print(events)
-    epoch = mne.Epochs(raw, events, event_dict, -0.1, 2.0, (None, 0.0), preload=True, reject=None, reject_by_annotation=None)
-    print(epoch.drop_log)
+    epoch = mne.Epochs(raw, events, event_dict, -0.1, 0.8, (None, 0.0), preload=True, reject=None, flat=None, reject_by_annotation=False, reject_tmax=None)
     # epochs['up'].plot_psd(picks='eeg')
     if use_autoreject is True:
         epochs = use_autoreject_to_remove_noise(epoch)

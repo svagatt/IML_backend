@@ -5,7 +5,7 @@ import motor.motor_asyncio
 import pickle
 
 
-sub_id = '20'
+sub_id = '111'
 
 
 def client():
@@ -82,9 +82,8 @@ async def get_preprocessed_file_location():
 async def load_latest_model():
     db = open_database()
     doc = await db['trained_models'].find_one(sort=[('_id', DESCENDING)], limit=1)
-    with open(doc['model'], 'rb') as pickled_file:
-        model = pickle.load(pickled_file)
-        return model
+    model = pickle.loads(doc['model'])
+    return model
 
 
 async def store_model_in_db(name, trained_model):
@@ -127,10 +126,25 @@ async def reset_label_in_db(label, parameters):
     filters = parameters.filters
     autoreject = parameters.autoreject
     collection_name = f'features_{sub_id}_{filters}_{autoreject}'
-    doc = await db[collection_name].find_one(projection={'index': True}, sort=[('_id', DESCENDING)], limit=1)
+    doc = await db[collection_name].find_one(projection={'_id': True}, sort=[('_id', DESCENDING)], limit=1)
     index = doc['index']
-    await db[collection_name].update_one({'index': index}, {'label': label})
+    await db[collection_name].update_one({'_id': index}, {'label': label})
 
 
 def close_database():
     client().close_session()
+
+
+async def insert_event_into_db(events):
+    db = open_database()
+    collection_name = 'events'
+    await db[collection_name].insert_one({
+        'events': events,
+    })
+
+
+async def update_event(event_id):
+    db = open_database()
+    doc = await db['events'].find_one(projection={'_id': True}, sort=[('_id', DESCENDING)], limit=1)
+    index = doc['_id']
+    await db['file_locations'].update_one({'_id': index}, {'$set': {'eventId': event_id}})

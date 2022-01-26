@@ -3,6 +3,8 @@ from read_save_data_files import get_path
 from EEGTools.Recorders.LiveAmpRecorder.Backends import Sawtooth as backend
 
 import asyncio
+import time
+import numpy as np
 
 # initialize the recorder and connect it
 rec = Recorder(backend=backend.get_backend())
@@ -11,10 +13,10 @@ print('-------Recorder Connected--------')
 
 
 async def start_recording():
-
-    rec.refresh()
+    rec.clear()
     rec.start_recording()
     await asyncio.sleep(3)
+    print(time.time())
     rec.refresh()
 
 
@@ -40,7 +42,7 @@ def stop_recording(subject_id):
     rec.clear()
 
 
-def get_events() -> list:
+def get_events() -> np.ndarray:
     return rec.get_events()
 
 
