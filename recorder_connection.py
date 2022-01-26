@@ -7,7 +7,7 @@ import time
 import numpy as np
 
 # initialize the recorder and connect it
-rec = Recorder(backend=backend.get_backend())
+rec = Recorder()
 rec.connect()
 print('-------Recorder Connected--------')
 
@@ -16,7 +16,6 @@ async def start_recording():
     rec.clear()
     rec.start_recording()
     await asyncio.sleep(3)
-    print(time.time())
     rec.refresh()
 
 
@@ -29,7 +28,7 @@ def set_event_with_offset(event_id, time):
 
 def get_latest_data_from_buffer():
     rec.refresh()
-    data = rec.get_new_data()
+    data = rec.get_data()
     return data
 
 

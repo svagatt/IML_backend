@@ -60,10 +60,10 @@ async def extract_feature_to_collection(event_keys, epochs, feature_list, sample
         if 'wavelet_dec' in feature_list:
             features_wavelet_npy = wavelet.feature_vector(data)
             feature_list.remove('wavelet_dec')
-        features_mne_npy = mne_features.feature_extraction.extract_features(data, samplerate, feature_list)
+        features_mne_npy = mne_features.feature_extraction.extract_features(data, samplerate, feature_list, n_jobs=1)
         features_npy = np.column_stack((features_wavelet_npy, features_mne_npy))
-        feature_list.append('wavelet_dec')
         await create_collection_with_features(parameters, db, features_npy, event, filehash, is_online)
+        feature_list.insert(0, 'wavelet_dec')
 
 
 async def create_collection_with_features(parameters, db, features_npy, label, filehash, is_online):
@@ -82,7 +82,6 @@ async def create_collection_with_features(parameters, db, features_npy, label, f
                     'label': label,
                     'online': 'True' if is_online is not None else 'False'
                     }
-        print(index)
         await insert_doc_in_collection(feature_collection, doc_dict)
 
 

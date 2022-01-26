@@ -17,10 +17,9 @@ import asyncio
 filter_type: str = 'cheby2'
 # features: list = ['wavelet_dec', 'hurst_exp', 'skewness', 'std', 'hjorth_complexity', 'higuchi_fd', 'spect_entropy', 'svd_fisher_info', 'app_entropy', 'pow_freq_bands']
 features: list = ['wavelet_dec', 'mean', 'skewness', 'std', 'variance']
-subject_id: int = 111
+subject_id: int = 101
 # events that occur during the recording
-event_dict = {'Space_key': 39, 'Dummy': 99}
-# event_dict: dict = {'Schraube_start': 10, 'Platine_start': 20, 'Gehäuse_start': 30, 'Werkbank_start': 40, 'Fließband_start': 50, 'Boden_start': 60, 'Lege_start': 70, 'Halte_start': 80, 'Hebe_start': 90}
+event_dict = {'Dummy': 99}
 auto_reject: bool = False
 parameters: Parameters = Parameters(subject_id, filter_type, auto_reject, features, 64)
 sample_rate: float = 500
@@ -56,16 +55,14 @@ async def classify_label():
 
 
 async def retrain_model():
-    await train_online()
+    await train_online(random_state, parameters)
 
 
 async def get_label(data):
     print('-----Loading Model to Predict-----')
     model = await load_latest_model()
     prediction = model.predict(data)
-    print(prediction)
     pickled_le = await get_label_encoder_from_db()
-    print(pickled_le)
     le = pickle.loads(pickled_le)
     predicted_label = le.inverse_transform([prediction])[0]
     print(f'Predicted Label: {predicted_label}')

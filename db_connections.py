@@ -5,7 +5,7 @@ import motor.motor_asyncio
 import pickle
 
 
-sub_id = '111'
+sub_id = '101'
 
 
 def client():
@@ -127,8 +127,9 @@ async def reset_label_in_db(label, parameters):
     autoreject = parameters.autoreject
     collection_name = f'features_{sub_id}_{filters}_{autoreject}'
     doc = await db[collection_name].find_one(projection={'_id': True}, sort=[('_id', DESCENDING)], limit=1)
-    index = doc['index']
-    await db[collection_name].update_one({'_id': index}, {'label': label})
+    index = doc['_id']
+    print(index)
+    await db[collection_name].update_one({'_id': index}, {'$set': {'label': label}})
 
 
 def close_database():
@@ -147,4 +148,4 @@ async def update_event(event_id):
     db = open_database()
     doc = await db['events'].find_one(projection={'_id': True}, sort=[('_id', DESCENDING)], limit=1)
     index = doc['_id']
-    await db['file_locations'].update_one({'_id': index}, {'$set': {'eventId': event_id}})
+    await db['events'].update_one({'_id': index}, {'$set': {'eventId': event_id}})

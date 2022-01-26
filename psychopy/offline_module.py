@@ -25,7 +25,7 @@ from numpy import (sin, cos, tan, log, log10, pi, average,
                    
 from numpy.random import random, randint, normal, shuffle, choice as randchoice
 from numpy.random import uniform
-import os  # handy system and path functions
+import os  # han(-1.0000, -1.0000, -1.0000)(-1.0000, -1.0000, -1.0000)dy system and path functions
 import sys  # to get file system encoding
 
 from psychopy.hardware import keyboard
@@ -108,11 +108,11 @@ rec.connect()
 
 # Setup the Window
 win = visual.Window(
-    size=[1920, 1080], fullscr=False, screen=0, 
+    size=[1920, 1080], fullscr=False, screen=1, 
     winType='pyglet', allowGUI=False, allowStencil=False,
-    monitor='testMonitor', color=[0,0,0], colorSpace='rgb',
+    monitor='displayOne', color=[0,0,0], colorSpace='rgb',
     blendMode='avg', useFBO=True, 
-    units='height')
+    units='height') 
 # store frame rate of monitor if we can measure it
 expInfo['frameRate'] = win.getActualFrameRate()
 if expInfo['frameRate'] != None:

@@ -10,11 +10,11 @@ timestamp = datetime.now()
 timestamp_str = timestamp.strftime("%d-%b-%Y (%H:%M:%S.%f)")
 
 
-def set_file_name(subject, level, channel_num, ctr=None):
+def set_file_name(subject, level, ctr=None):
     if ctr is not None:
         filename = f'sub_{subject}_{level}_{ctr}_raw.fif'
     else:
-        filename = f'sub_{subject}_{level}_{channel_num}_raw.fif'
+        filename = f'sub_{subject}_{level}_raw.fif'
     return filename
 
 
@@ -26,13 +26,13 @@ def get_path(directory_name):
     return path
 
 
-def save_preprocessed_data_offline(raw, subject, channel_num):
+def save_preprocessed_data_offline(raw, subject):
     level = 'preprocessed'
     path = get_path('preprocessed_data')
     if not os.path.exists(path):
         # Path does not exist yet, create it
         os.makedirs(path)
-    raw.save(os.path.join(path, set_file_name(subject, level, channel_num)), fmt='single', overwrite=True)
+    raw.save(os.path.join(path, set_file_name(subject, level)), fmt='single', overwrite=True)
 
 
 async def save_preprocessed_data_online(raw, subject, channel_num):
@@ -42,8 +42,8 @@ async def save_preprocessed_data_online(raw, subject, channel_num):
         # Path does not exist yet, create it
         os.makedirs(path)
     index = await query_for_index() + 1
-    raw.save(os.path.join(path, set_file_name(subject, level, channel_num, index)), fmt='single', overwrite=False)
-    await save_preprocessed_file_location_in_db(index, subject, f'{path}/{set_file_name(subject, level, channel_num, index)}')
+    raw.save(os.path.join(path, set_file_name(subject, level, index)), fmt='single', overwrite=False)
+    await save_preprocessed_file_location_in_db(index, subject, f'{path}/{set_file_name(subject, level, index)}')
 
 
 def read_raw_fif(filepath):

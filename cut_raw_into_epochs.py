@@ -3,7 +3,6 @@ from db_connections import query_for_index, save_epochs_file_location_in_db, get
 
 from autoreject import AutoReject
 import mne
-import numpy as np
 
 
 def cut_epochs_by_event_id(event_dict, subject_id, use_autoreject, channel_num):
@@ -12,7 +11,7 @@ def cut_epochs_by_event_id(event_dict, subject_id, use_autoreject, channel_num):
     """ extract events from raw data """
     raw_events = raw.info['events']
     events = [event['list'].tolist() for event in raw_events]
-    epochs = mne.Epochs(raw, events, event_dict, -0.1, 2.0, preload=True)
+    epochs = mne.Epochs(raw, events, event_dict, -0.2, 2.0,  preload=True)
     # epochs['up'].plot_psd(picks='eeg')
     if use_autoreject is True:
         epochs = use_autoreject_to_remove_noise(epochs)
@@ -20,14 +19,14 @@ def cut_epochs_by_event_id(event_dict, subject_id, use_autoreject, channel_num):
     epochs.save(get_path('epochs')+fname, overwrite=True, fmt='single', verbose=True)
 
 
-def cut_epochs_by_event_id_offline(event_dict, subject_id, use_autoreject, channel_num):
-    file_path = get_path('preprocessed_data') + f'/sub_{subject_id}_preprocessed_{channel_num}_raw.fif'
+def cut_epochs_by_event_id_offline(event_dict, subject_id, use_autoreject):
+    file_path = get_path('preprocessed_data') + f'/sub_{subject_id}_preprocessed_raw.fif'
     raw = read_raw_fif(file_path)
     """ extract events from raw data """
     raw_events = raw.info['events']
     events = [event['list'].tolist() for event in raw_events]
     print(len(events))
-    epochs = mne.Epochs(raw, events, event_dict, -0.2, 3.0, (-0.2, None), preload=True)
+    epochs = mne.Epochs(raw, events, event_dict, -0.2, 1.5, (-0.2, 0), preload=True)
     # epochs['up'].plot_psd(picks='eeg')
     if use_autoreject is True:
         epochs = use_autoreject_to_remove_noise(epochs)
