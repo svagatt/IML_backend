@@ -1,11 +1,11 @@
-from pymongo import DESCENDING
+from pymongo import DESCENDING, ReturnDocument, ASCENDING
 from pymongo.errors import ConnectionFailure
 import sys
 import motor.motor_asyncio
 import pickle
+import time
 
-
-sub_id = '101'
+sub_id = '111'
 
 
 def client():
@@ -47,7 +47,7 @@ async def get_latest_file_location_entry():
     return doc
 
 
-async def query_for_index():
+async def query_for_index() -> int:
     db = open_database()
     if 'file_locations' not in await db.list_collection_names():
         return 0
@@ -72,14 +72,14 @@ async def save_epochs_file_location_in_db(file_location):
     await db['file_locations'].update_one({'index': index}, {'$set': {'epochs_data_location': file_location}})
 
 
-async def get_preprocessed_file_location():
+async def get_preprocessed_file_location() -> str:
     db = open_database()
     doc = await db['file_locations'].find_one(sort=[('_id', DESCENDING)], limit=1)
     location = doc['preprocessed_data_location']
     return location
 
 
-async def load_latest_model():
+async def load_latest_model() -> bytes:
     db = open_database()
     doc = await db['trained_models'].find_one(sort=[('_id', DESCENDING)], limit=1)
     model = pickle.loads(doc['model'])
@@ -103,14 +103,14 @@ async def store_label_encoder_in_db(le):
     })
 
 
-async def get_label_encoder_from_db():
+async def get_label_encoder_from_db() -> bytes:
     db = open_database()
     doc = await db['label_encoder'].find_one(sort=[('_id', DESCENDING)], limit=1)
     le = doc['le']
     return le
 
 
-async def get_latest_features_from_db(parameters):
+async def get_latest_features_from_db(parameters) -> list:
     db = open_database()
     features = []
     filters = parameters.filters
@@ -126,10 +126,9 @@ async def reset_label_in_db(label, parameters):
     filters = parameters.filters
     autoreject = parameters.autoreject
     collection_name = f'features_{sub_id}_{filters}_{autoreject}'
-    doc = await db[collection_name].find_one(projection={'_id': True}, sort=[('_id', DESCENDING)], limit=1)
-    index = doc['_id']
-    print(index)
-    await db[collection_name].update_one({'_id': index}, {'$set': {'label': label}})
+    _id = await db[collection_name].estimated_document_count()
+    result = await db[collection_name].find_one_and_update({'_id': _id}, {'$set': {'label': label}}, return_document=ReturnDocument.AFTER)
+    print(result)
 
 
 def close_database():
@@ -149,3 +148,21 @@ async def update_event(event_id):
     doc = await db['events'].find_one(projection={'_id': True}, sort=[('_id', DESCENDING)], limit=1)
     index = doc['_id']
     await db['events'].update_one({'_id': index}, {'$set': {'eventId': event_id}})
+
+
+async def save_time_when_refreshed(name):
+    db = open_database()
+    await db['recording_lapse'].insert_one({name: time.time()})
+
+
+async def get_recording_start_time() -> float:
+    db = open_database()
+    doc = await db['recording_lapse'].find_one(projection={'start_time': True}, sort=[('_id', ASCENDING)], limit=1)
+    return doc['start_time']
+
+
+async def get_latest_refresh_times() -> float:
+    db = open_database()
+    latest_refresh_times = []
+    doc = await db['recording_lapse'].find_one(projection={'refresh_buffer': True}, sort=[('_id', DESCENDING)], limit=2)
+    return doc['refresh_buffer']

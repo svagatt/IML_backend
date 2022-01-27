@@ -9,7 +9,6 @@ from generate_file_hash import get_hash_for_preprocessed_data
 from classes import Parameters
 
 le = preprocessing.LabelEncoder()
-db = open_database()
 
 
 async def prepare_test_train_data(parameters, randomstate, is_online=None):
@@ -46,7 +45,7 @@ async def train_model(randomstate, parameters):
 
 async def train_online(randomstate, parameters):
     X_train, X_test, y_train, y_test = await prepare_test_train_data(parameters, randomstate, True)
-    model = load_latest_model()
+    model = await load_latest_model()
     # Retrain model
     model.fit(X_train, y_train)
     train_score = model.score(X_train, y_train)
@@ -70,21 +69,18 @@ async def get_features_labels_from_db(parameters, is_online):
     autoreject = parameters.autoreject
     collection_name = f'features_{sub_id}_{filters}_{autoreject}'
     if is_online:
-        cursor = db[collection_name].find({}, {'features': True, 'label': True}).sort({'_id': DESCENDING}).limit(9)
+        db = open_database()
+        cursor = db[collection_name].find(projection={'features': True, 'label': True}, sort=[('_id', DESCENDING)], limit=9)
         async for doc in cursor:
             value = dict(doc)
             features_list.append(value['features'])
             labels_list.append(value['label'])
         return features_list, labels_list
     else:
+        db = open_database()
         cursor = db[collection_name].find({'hashid': get_hash_for_preprocessed_data(sub_id, channels)}, {'features': True, 'label': True})
         async for doc in cursor:
             value = dict(doc)
             features_list.append(value['features'])
             labels_list.append(value['label'])
         return features_list, labels_list
-
-
-
-
-

@@ -10,7 +10,7 @@ context = zmq.asyncio.Context()
 socket = context.socket(zmq.REP)
 socket.bind('tcp://*:5555')
 # windows asyncio warning trigger
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+# asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 async def get_request():
@@ -45,8 +45,8 @@ async def action_based_on_request(repsocket, request_message):
         duration = end_time - start_time
         # duration = 0
         print(f'Elapsed Duration: {duration}')
-        set_event_with_offset(39, -duration)
-        set_event_with_offset(99, -duration+2)
+        await set_event_with_offset(39, -duration)
+        await set_event_with_offset(99, -duration+2)
         await repsocket.send_string('EventAdded')
 
 
@@ -59,7 +59,6 @@ def main():
         print('User triggered exit')
         socket.close(linger=0)
         context.term()
-        close_database()
         raise SystemExit
 
 
