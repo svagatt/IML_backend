@@ -5,7 +5,7 @@ import motor.motor_asyncio
 import pickle
 import time
 
-sub_id = '111'
+sub_id = '101'
 
 
 def client():
@@ -157,7 +157,7 @@ async def save_time_when_refreshed(name):
 
 async def get_recording_start_time() -> float:
     db = open_database()
-    doc = await db['recording_lapse'].find_one(projection={'start_time': True}, sort=[('_id', ASCENDING)], limit=1)
+    doc = await db['recording_lapse'].find_one(projection={'start_time': True}, sort=[('start_time', DESCENDING)], limit=1)
     return doc['start_time']
 
 

@@ -8,15 +8,15 @@ import numpy as np
 import mne
 
 # initialize the recorder and connect it
-rec = Recorder(backend=backend.get_backend())
+rec = Recorder()
 rec.connect()
 print('-------Recorder Connected--------')
 
 
 async def start_recording():
     rec.clear()
-    rec.start_recording()
     await save_time_when_refreshed('start_time')
+    rec.start_recording()
     await asyncio.sleep(3)
     rec.refresh()
 
@@ -44,13 +44,14 @@ def get_data_test():
     return raw
 
 
-def stop_recording(subject_id):
+async def stop_recording(subject_id):
     rec.stop_recording()
     print('Recording has been stopped!')
     rec.disconnect()
     rec.save(file_prefix=f"subject_{subject_id}_online_raw", path=get_path('online_module_data'), description='Online Module Data Recording')
     rec.refresh()
     rec.clear()
+    await asyncio.sleep(2)
 
 
 def get_events() -> np.ndarray:
@@ -61,12 +62,13 @@ def get_ch_names() -> list:
     return rec.get_names()
 
 
-async def get_only_related_events(events)-> list:
+async def get_only_related_events(events) -> np.ndarray:
     elapsed_time = await get_elapsed_time_sample_points()
-    related_events = [[event[0] - elapsed_time, event[1], event[2]] for event in events]
+    print(elapsed_time)
+    related_events = [np.asarray([event[0] - elapsed_time, event[1], event[2]]).astype(int).tolist() for event in events]
     print(f'Events: {events}')
     print(f'Cut events: {related_events}')
-    return events
+    return related_events
 
 
 async def get_elapsed_time_sample_points() -> int:

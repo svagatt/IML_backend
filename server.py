@@ -4,13 +4,14 @@ import time
 
 from online_module import classify_label, set_right_label, retrain_model
 from db_connections import close_database
-from recorder_connection import start_recording, set_event_with_offset
+from recorder_connection import start_recording, set_event_with_offset, stop_recording
 
 context = zmq.asyncio.Context()
 socket = context.socket(zmq.REP)
 socket.bind('tcp://*:5555')
+subject_id = 101
 # windows asyncio warning trigger
-# asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 async def get_request():
@@ -48,6 +49,9 @@ async def action_based_on_request(repsocket, request_message):
         await set_event_with_offset(39, -duration)
         await set_event_with_offset(99, -duration+2)
         await repsocket.send_string('EventAdded')
+    elif request_message == 'RequestToStopRecording':
+        await stop_recording(subject_id)
+        await repsocket.send_string('DataSaved')
 
 
 def main():

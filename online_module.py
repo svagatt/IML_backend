@@ -17,7 +17,7 @@ from sklearn.utils.validation import DataConversionWarning
 filter_type: str = 'cheby2'
 # features: list = ['wavelet_dec', 'hurst_exp', 'skewness', 'std', 'hjorth_complexity', 'higuchi_fd', 'spect_entropy', 'svd_fisher_info', 'app_entropy', 'pow_freq_bands']
 features: list = ['wavelet_dec', 'mean', 'skewness', 'std', 'variance']
-subject_id: int = 111
+subject_id: int = 101
 # events that occur during the recording
 dummy_event_dict = {'Dummy': 99}
 event_dict: dict = {'Schraube_start': 10, 'Platine_start': 20, 'Gehäuse_start': 30, 'Werkbank_start': 40, 'Fließband_start': 50, 'Boden_start': 60, 'Lege_start': 70, 'Halte_start': 80, 'Hebe_start': 90}

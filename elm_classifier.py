@@ -24,7 +24,7 @@ async def train_model(randomstate, parameters):
     X_train, X_test, y_train, y_test = await prepare_test_train_data(parameters, randomstate)
     models = {
         'ELM': ELMClassifier(n_hidden=300, rbf_width=1.0, activation_func='sigmoid', random_state=randomstate),
-        'onlineELM': OSELMClassifier(n_hidden=300, activation_func='tanh', random_state=randomstate),
+        'onlineELM': OSELMClassifier(n_hidden=300, activation_func='sigmoid', random_state=randomstate),
     }
 
     for name, model in models.items():
@@ -32,6 +32,7 @@ async def train_model(randomstate, parameters):
         model.fit(X_train, y_train)
         train_score = model.score(X_train, y_train)
         test_score = model.score(X_test, y_test)
+        print(type(model))
 
         # Validate scores
         print(f'Train and test scores for {name}: {train_score}, {test_score}')
@@ -47,6 +48,7 @@ async def train_online(randomstate, parameters):
     X_train, X_test, y_train, y_test = await prepare_test_train_data(parameters, randomstate, True)
     model = await load_latest_model()
     # Retrain model
+    print(type(model))
     model.fit(X_train, y_train)
     train_score = model.score(X_train, y_train)
     test_score = model.score(X_test, y_test)
