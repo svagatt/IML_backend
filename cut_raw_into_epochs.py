@@ -1,3 +1,4 @@
+import recorder_connection
 from read_save_data_files import get_path, read_raw_fif
 from db_connections import query_for_index, save_epochs_file_location_in_db, get_preprocessed_file_location, insert_event_into_db
 from recorder_connection import get_only_related_events, get_elapsed_time_sample_points
@@ -39,11 +40,16 @@ async def cut_epochs_by_event_id_online(subject_id, use_autoreject, event_dict):
     file_path = await get_preprocessed_file_location()
     raw = read_raw_fif(file_path)
     print(raw)
+    raw_test = recorder_connection.get_data_test()
+    print(raw_test)
+    raw_events = raw.info['events']
+    raw_test_events = raw_test.info['events']
+    print(f'RAW TEST EVENTS: {raw_test_events}')
+    event_list = [event['list'].tolist() for event in raw_events]
     print(await get_elapsed_time_sample_points())
     """ extract events from raw data """
-    events = await get_only_related_events()
+    events = await get_only_related_events(event_list)
     await insert_event_into_db(events)
-    print(events)
     epoch = mne.Epochs(raw, events, event_dict, -0.1, 0.8, (None, 0.0), preload=True, reject=None, flat=None, reject_by_annotation=False, reject_tmax=None)
     # epochs['up'].plot_psd(picks='eeg')
     if use_autoreject is True:

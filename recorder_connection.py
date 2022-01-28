@@ -5,6 +5,7 @@ from db_connections import save_time_when_refreshed, get_recording_start_time, g
 
 import asyncio
 import numpy as np
+import mne
 
 # initialize the recorder and connect it
 rec = Recorder(backend=backend.get_backend())
@@ -28,10 +29,19 @@ async def set_event_with_offset(event_id, time):
     print('-------Event set--------')
 
 
-async def get_latest_data_from_buffer():
+def get_latest_data_from_buffer():
     rec.refresh()
     data = rec.get_new_data()
     return data
+
+
+def get_data_test():
+    rec.refresh()
+    data = rec.get_data()
+    info = mne.create_info(ch_names=get_ch_names(), sfreq=500.0, ch_types='eeg')
+    info['events'] = [{'list': event} for event in get_events()[-2:]]
+    raw = mne.io.RawArray(data, info)
+    return raw
 
 
 def stop_recording(subject_id):
@@ -51,11 +61,12 @@ def get_ch_names() -> list:
     return rec.get_names()
 
 
-async def get_only_related_events()-> list:
-    all_events = [{'list': event} for event in get_events()]
-    events = [event for event in all_events[-2:]]
-    related_events = [[event[0] - get_elapsed_time_sample_points(), event[1], event[2]] for event in events]
-    return related_events
+async def get_only_related_events(events)-> list:
+    elapsed_time = await get_elapsed_time_sample_points()
+    related_events = [[event[0] - elapsed_time, event[1], event[2]] for event in events]
+    print(f'Events: {events}')
+    print(f'Cut events: {related_events}')
+    return events
 
 
 async def get_elapsed_time_sample_points() -> int:

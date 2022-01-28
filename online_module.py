@@ -29,12 +29,12 @@ is_online: bool = True
 
 
 async def preprocessing_steps():
-    data = await recorder_connection.get_latest_data_from_buffer()
+    data = recorder_connection.get_latest_data_from_buffer()
     shape: tuple = data.shape
     if shape[1] != 0:
         # filtered_data = scipy_filter.filter_data(sample_rate, data)
         info = mne.create_info(ch_names=recorder_connection.get_ch_names(), sfreq=sample_rate, ch_types='eeg')
-        info['events'] = [{'list': event} for event in recorder_connection.get_events()]
+        info['events'] = [{'list': event} for event in recorder_connection.get_events()[-2:]]
         raw = mne.io.RawArray(data, info)
         # preprocessed_data = mne.io.RawArray(filtered_data, info)
 
