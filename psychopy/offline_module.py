@@ -58,6 +58,7 @@ def stop_recording():
     rec.refresh()
     rec.clear()
 
+
 def set_event(event_id):
     rec.refresh()
     rec.set_event(event_id)

@@ -41,16 +41,13 @@ async def cut_epochs_by_event_id_online(subject_id, use_autoreject, event_dict):
     print(raw)
     raw_events = raw.info['events']
     event_list = [event['list'].tolist() for event in raw_events]
+    await insert_event_into_db(event_list)
     """ extract events from raw data """
     events = await get_only_related_events(event_list)
-    await insert_event_into_db(events)
     epoch = mne.Epochs(raw, events, event_dict, -0.8, 0.8, (None, -0.5), preload=True, reject=None, flat=None, reject_by_annotation=False, reject_tmax=None)
-    # epochs['up'].plot_psd(picks='eeg')
-    if use_autoreject is True:
-        epochs = use_autoreject_to_remove_noise(epoch)
     index = await query_for_index()
     fname = f'/sub_{subject_id}_{index}_epo.fif'
-    epoch.save(get_path('epochs')+fname, overwrite=True, fmt='single', verbose=True)
+    epoch.save(get_path('epochs') + fname, overwrite=True, fmt='single', verbose=True)
     await save_epochs_file_location_in_db(f"{get_path('epochs')}{fname}")
 
 

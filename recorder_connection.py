@@ -48,7 +48,7 @@ async def stop_recording(subject_id):
     rec.stop_recording()
     print('Recording has been stopped!')
     rec.disconnect()
-    rec.save(file_prefix=f"subject_{subject_id}_online_raw", path=get_path('online_module_data'), description='Online Module Data Recording')
+    rec.save(file_prefix=f"subject_{subject_id}_online_raw", path=f"{get_path('online_module_data')}/", description='Interactive Module Data Recording')
     rec.refresh()
     rec.clear()
     await asyncio.sleep(2)

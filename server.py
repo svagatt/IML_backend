@@ -3,13 +3,13 @@ import zmq.asyncio
 import time
 
 from online_module import classify_label, set_right_label, retrain_model
-from db_connections import close_database
+from db_connections import sub_id
 from recorder_connection import start_recording, set_event_with_offset, stop_recording
 
 context = zmq.asyncio.Context()
 socket = context.socket(zmq.REP)
 socket.bind('tcp://*:5555')
-subject_id = 101
+subject_id = sub_id
 # windows asyncio warning trigger
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 

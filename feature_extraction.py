@@ -33,27 +33,36 @@ async def extract_features(parameters, samplerate, event_dict, is_online=None):
     feature_extraction_methods = parameters.features
     feature_list = copy.deepcopy(feature_extraction_methods)
     event_keys = event_dict.keys()
+    epochs = None
+    epochs_available = True
     if is_online:
         ctr = await query_for_index()
         filehash = get_hash_for_preprocessed_data(sub_id, channel_num, is_online, ctr)
-        epochs = read_fif_epochs(await get_epochs_path_online())
+        try:
+            epochs = read_fif_epochs(await get_epochs_path_online())
+        except AttributeError:
+            epochs_available = False
+            print('----Empty epoch----')
         event_keys = ['Dummy']
     else:
         filehash = get_hash_for_preprocessed_data(sub_id, channel_num)
         epochs = read_fif_epochs(get_epochs_path_offline(sub_id))
-    collection_name = get_collection_name(parameters)
-    if collection_name not in await db.list_collection_names():
-        print('--------Creating Database------------')
-        print('--------Extracting features----------')
-        await extract_feature_to_collection(event_keys, epochs, feature_list, samplerate, db, parameters, filehash, is_online)
+    if epochs_available:
+        collection_name = get_collection_name(parameters)
+        if collection_name not in await db.list_collection_names():
+            print('--------Creating Database------------')
+            print('--------Extracting features----------')
+            await extract_feature_to_collection(event_keys, epochs, feature_list, samplerate, db, parameters, filehash, is_online)
 
-    else:
-        print('------Database already exists--------')
-        print('------Adding features------')
-        await extract_feature_to_collection(event_keys, epochs, feature_list, samplerate, db, parameters, filehash, is_online)
+        else:
+            print('------Database already exists--------')
+            print('------Adding features------')
+            await extract_feature_to_collection(event_keys, epochs, feature_list, samplerate, db, parameters, filehash, is_online)
+    return epochs_available
 
 
 async def extract_feature_to_collection(event_keys, epochs, feature_list, samplerate, db, parameters, filehash, is_online):
+    features_wavelet_npy: np.array = []
     for event in event_keys:
         data = epochs.get_data(item=event)
         print(feature_list)
@@ -69,6 +78,7 @@ async def extract_feature_to_collection(event_keys, epochs, feature_list, sample
 async def create_collection_with_features(parameters, db, features_npy, label, filehash, is_online):
     collection_name = get_collection_name(parameters)
     feature_collection = db[collection_name]
+    index = 0
     if collection_name not in await db.list_collection_names():
         index = 0
     else:
@@ -95,4 +105,3 @@ def get_collection_name(parameters) -> str:
     autoreject = parameters.autoreject
     collection_name = f'features_{sub_id}_{filters}_{autoreject}'
     return collection_name
-

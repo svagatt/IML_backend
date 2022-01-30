@@ -5,7 +5,7 @@ import motor.motor_asyncio
 import pickle
 import time
 
-sub_id = '101'
+sub_id: int = 111
 
 
 def client():
@@ -25,7 +25,7 @@ def open_database():
     return db
 
 
-async def store_accuracy_results_in_db(parameters):
+async def store_accuracy_results_in_db(parameters, initial_test_scores=None):
     db = open_database()
     collection = db['results']
     await collection.insert_one({
@@ -34,11 +34,13 @@ async def store_accuracy_results_in_db(parameters):
         'filters': parameters.filters,
         'autoreject': parameters.autoreject,
         'features': parameters.features,
+        'initialBatchTestScores': 'not valid' if initial_test_scores is None else initial_test_scores,
         'trainScore': parameters.train_score,
         'testScore': parameters.test_score,
         'classifier': parameters.classifier,
         'others': parameters.others,
     })
+    close_database()
 
 
 async def get_latest_file_location_entry():
@@ -64,12 +66,14 @@ async def save_preprocessed_file_location_in_db(index, subject_id, file_location
         'subject': subject_id,
         'preprocessed_data_location': file_location,
     })
+    close_database()
 
 
 async def save_epochs_file_location_in_db(file_location):
     db = open_database()
     index = await query_for_index()
     await db['file_locations'].update_one({'index': index}, {'$set': {'epochs_data_location': file_location}})
+    close_database()
 
 
 async def get_preprocessed_file_location() -> str:
@@ -79,7 +83,7 @@ async def get_preprocessed_file_location() -> str:
     return location
 
 
-async def load_latest_model() -> bytes:
+async def load_latest_model():
     db = open_database()
     doc = await db['trained_models'].find_one(sort=[('_id', DESCENDING)], limit=1)
     model = pickle.loads(doc['model'])
@@ -93,6 +97,7 @@ async def store_model_in_db(name, trained_model):
         'name': name,
         'model': trained_model,
     })
+    close_database()
 
 
 async def store_label_encoder_in_db(le):
@@ -101,11 +106,12 @@ async def store_label_encoder_in_db(le):
     await db[collection_name].insert_one({
         'le': le,
     })
+    close_database()
 
 
 async def get_label_encoder_from_db() -> bytes:
     db = open_database()
-    doc = await db['label_encoder'].find_one(sort=[('_id', DESCENDING)], limit=1)
+    doc = await db['label_encoder'].find_one(sort=[('_id', ASCENDING)], limit=1)
     le = doc['le']
     return le
 
@@ -132,7 +138,7 @@ async def reset_label_in_db(label, parameters):
 
 
 def close_database():
-    client().close_session()
+    client().close()
 
 
 async def insert_event_into_db(events):
@@ -141,6 +147,7 @@ async def insert_event_into_db(events):
     await db[collection_name].insert_one({
         'events': events,
     })
+    close_database()
 
 
 async def update_event(event_id):
@@ -148,11 +155,13 @@ async def update_event(event_id):
     doc = await db['events'].find_one(projection={'_id': True}, sort=[('_id', DESCENDING)], limit=1)
     index = doc['_id']
     await db['events'].update_one({'_id': index}, {'$set': {'eventId': event_id}})
+    close_database()
 
 
 async def save_time_when_refreshed(name):
     db = open_database()
     await db['recording_lapse'].insert_one({name: time.time()})
+    close_database()
 
 
 async def get_recording_start_time() -> float:
@@ -163,6 +172,21 @@ async def get_recording_start_time() -> float:
 
 async def get_latest_refresh_times() -> float:
     db = open_database()
-    latest_refresh_times = []
     doc = await db['recording_lapse'].find_one(projection={'refresh_buffer': True}, sort=[('_id', DESCENDING)], limit=2)
     return doc['refresh_buffer']
+
+
+async def store_predicted_label(label):
+    db = open_database()
+    await db['labels'].insert_one({
+        'predictedLabel': label,
+    })
+    close_database()
+
+
+async def store_corrected_label(label):
+    db = open_database()
+    doc = await db['labels'].find_one(projection={'_id': True}, sort=[('_id', DESCENDING)], limit=1)
+    index = doc['_id']
+    await db['labels'].update_one({'_id': index}, {'$set': {'correctedLabel': label}})
+    close_database()
