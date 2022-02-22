@@ -31,7 +31,7 @@ async def train_model(randomstate, parameters):
     # the initial phase needs the same amount of samples as the hidden node number for boosting
     # the rest of the data can be split up into different batches
     hidden_nodes: int = 300
-    batch_size: int = 124
+    batch_size: int = 50
     initial_batch_test_scores = []
     batches_x, batches_y, X_train, X_test, y_train, y_test = await prepare_test_train_data(parameters, randomstate, hidden_nodes, batch_size)
     model = {'onlineELM': OSELMClassifier(n_hidden=hidden_nodes, activation_func='sigmoid', random_state=randomstate)}

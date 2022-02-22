@@ -62,7 +62,6 @@ async def extract_features(parameters, samplerate, event_dict, is_online=None):
 
 
 async def extract_feature_to_collection(event_keys, epochs, feature_list, samplerate, db, parameters, filehash, is_online):
-    features_wavelet_npy: np.array = []
     for event in event_keys:
         data = epochs.get_data(item=event)
         print(feature_list)

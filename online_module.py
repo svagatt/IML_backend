@@ -15,7 +15,7 @@ from sklearn.utils.validation import DataConversionWarning
 
 # all the necessary arguments
 filter_type: str = 'cheby2'
-# features: list = ['wavelet_dec', 'hurst_exp', 'skewness', 'std', 'hjorth_complexity', 'higuchi_fd', 'spect_entropy', 'svd_fisher_info', 'app_entropy', 'pow_freq_bands']
+# features: list = ['wavelet_dec', 'mean', 'skewness', 'std', 'variance', 'hurst_exp', 'hjorth_complexity', 'higuchi_fd', 'spect_entropy', 'svd_fisher_info', 'app_entropy', 'pow_freq_bands']
 features: list = ['wavelet_dec', 'mean', 'skewness', 'std', 'variance']
 subject_id: int = sub_id
 # events that occur during the recording

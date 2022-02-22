@@ -34,7 +34,6 @@ from psychopy.hardware import keyboard
 # External imports
 
 from EEGTools.Recorders.LiveAmpRecorder.liveamp_recorder import LiveAmpRecorder as Recorder
-from EEGTools.Recorders.LiveAmpRecorder.Backends import Sawtooth as backend
 
 
 folder_name = 'offline_module_data'
@@ -104,6 +103,8 @@ event_list = {'Schraube_start': 10, 'Platine_start': 20, 'Gehäuse_start': 30, '
 # initialize recorder
 rec = Recorder()
 rec.connect()
+rec.refresh()
+rec.clear()
 
 # Start Code - component code to be run after the window creation
 

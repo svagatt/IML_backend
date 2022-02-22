@@ -1,6 +1,6 @@
 from EEGTools.Recorders.LiveAmpRecorder.liveamp_recorder import LiveAmpRecorder as Recorder
 from read_save_data_files import get_path
-from EEGTools.Recorders.LiveAmpRecorder.Backends import Sawtooth as backend
+# from EEGTools.Recorders.LiveAmpRecorder.Backends import Sawtooth as backend
 from db_connections import save_time_when_refreshed, get_recording_start_time, get_latest_refresh_times
 
 import asyncio
@@ -49,8 +49,6 @@ async def stop_recording(subject_id):
     print('Recording has been stopped!')
     rec.disconnect()
     rec.save(file_prefix=f"subject_{subject_id}_online_raw", path=f"{get_path('online_module_data')}/", description='Interactive Module Data Recording')
-    rec.refresh()
-    rec.clear()
     await asyncio.sleep(2)
 
 
