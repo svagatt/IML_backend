@@ -22,9 +22,8 @@ def preprocess(raw, filtername, channels=None, is_online=None):
         """
         https://ieeexplore.ieee.org/document/9061628
         """
-        if not is_online:
-            pln_filter_params = dict(order=2, ftype='butter')
-            raw.notch_filter(50, iir_params=pln_filter_params, picks=channel_picks, method='iir')
+        pln_filter_params = dict(order=2, ftype='butter')
+        raw.notch_filter(50, iir_params=pln_filter_params, picks=channel_picks, method='iir')
         raw.filter(1., None)
         cheby2_filter_params = dict(order=17, ftype='cheby2', output='sos', rs=60.)
         raw.filter(None, 200., iir_params=cheby2_filter_params, method='iir')

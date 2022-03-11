@@ -24,6 +24,7 @@ path = get_path('offline_module_data')
 raw_data = read_raw_fif(f'{path}/subject_{subject_id}_raw.fif')
 sample_rate = raw_data.info['sfreq']
 raw_data.set_montage(set_montage())
+raw_data.drop_channels(['x_dir', 'y_dir', 'z_dir'])
 preprocessed_data = preprocess(raw_data, filter_type)
 save_preprocessed_data_offline(preprocessed_data, subject_id)
 cut_epochs_by_event_id_offline(event_dict, subject_id, auto_reject)

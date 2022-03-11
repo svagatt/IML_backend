@@ -37,8 +37,7 @@ async def preprocessing_steps():
         info = mne.create_info(ch_names=recorder_connection.get_ch_names(), sfreq=sample_rate, ch_types='eeg')
         info['events'] = [{'list': event} for event in recorder_connection.get_events()[-2:]]
         raw = mne.io.RawArray(data, info)
-        # preprocessed_data = mne.io.RawArray(filtered_data, info)
-
+        raw.drop_channels(['x_dir', 'y_dir', 'z_dir'])
         preprocessed_data = preprocessing.preprocess(raw, filter_type, is_online=is_online)
         await save_preprocessed_data_online(preprocessed_data, subject_id, 64)
         await cut_raw_into_epochs.cut_epochs_by_event_id_online(subject_id, auto_reject, dummy_event_dict)
