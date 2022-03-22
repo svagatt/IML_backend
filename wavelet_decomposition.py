@@ -13,7 +13,7 @@ class Wavelet_Decomposition:
         return wavedec(data=data, wavelet=fam, level=max_level)
 
     # shape [n_words * n_repetitions, channels, n_timestamps]
-    def feature_vector(self, data, max_level=5, fam='db4'):
+    def feature_vector(self, data, max_level=4, fam='db4'):
         output = []
         for sample in data:
             feature_vector = []
