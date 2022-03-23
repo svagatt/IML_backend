@@ -5,18 +5,21 @@ import pickle
 from pymongo import DESCENDING
 import numpy as np
 
-from db_connections import open_database, store_accuracy_results_in_db, store_model_in_db, store_label_encoder_in_db, load_latest_model
+from db_connections import open_database, store_accuracy_results_in_db, store_model_in_db, store_label_encoder_in_db, load_latest_model, get_label_encoder_from_db
 from generate_file_hash import get_hash_for_preprocessed_data
 from classes import Parameters
-
-le = preprocessing.LabelEncoder()
 
 
 async def prepare_test_train_data(parameters, randomstate, hidden_nodes=None, batch_size=None, is_online=None):
     features, labels = await get_features_labels_from_db(parameters, is_online)
-    labels_encoded = le.fit_transform(labels)
-    pickled_le = pickle.dumps(le)
-    await store_label_encoder_in_db(pickled_le)
+    if is_online is None or False:
+        le = preprocessing.LabelEncoder()
+        le.fit(labels)
+        pickled_le = pickle.dumps(le)
+        await store_label_encoder_in_db(pickled_le)
+    le = await get_label_encoder_from_db()
+    depickled_le = pickle.loads(le)
+    labels_encoded = depickled_le.transform(labels)
     if is_online:
         return features, labels_encoded
     else:
@@ -64,7 +67,7 @@ async def train_online(randomstate, parameters):
     # Validate scores
     print(f'Train scores for OSELM-batch: {train_score}')
     db_elements = Parameters(parameters.subject, parameters.filters, parameters.autoreject, parameters.features,
-                             parameters.channels, train_score, 'OSELM-Batch')
+                             parameters.channels, train_score, classifier='OSELM-Batch')
     await store_accuracy_results_in_db(db_elements)
     print('--------Classification done-------')
     trained_model = pickle.dumps(model)
