@@ -12,7 +12,7 @@ from classes import Parameters
 
 async def prepare_test_train_data(parameters, randomstate, hidden_nodes=None, batch_size=None, is_online=None):
     features, labels = await get_features_labels_from_db(parameters, is_online)
-    if is_online is None or False:
+    if not is_online:
         le = preprocessing.LabelEncoder()
         le.fit(labels)
         pickled_le = pickle.dumps(le)
@@ -36,7 +36,7 @@ async def train_model(randomstate, parameters):
     hidden_nodes: int = 300
     batch_size: int = 50
     initial_batch_test_scores = []
-    batches_x, batches_y, X_train, X_test, y_train, y_test = await prepare_test_train_data(parameters, randomstate, hidden_nodes, batch_size)
+    batches_x, batches_y, X_train, X_test, y_train, y_test = await prepare_test_train_data(parameters, randomstate, hidden_nodes, batch_size, is_online=False)
     model = {'onlineELM': OSELMClassifier(n_hidden=hidden_nodes, activation_func='sigmoid', random_state=randomstate)}
     for name, model in model.items():
         for batch_x, batch_y in zip(batches_x, batches_y):
